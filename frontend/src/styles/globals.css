@@ -1,11 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ============================================
+   Tailwind CSS V4 + HeroUI V3
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+@import "@heroui/react/styles";
 
 /* ============================================
    全局基础样式 - 炫酷暗色主题
    ============================================ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;

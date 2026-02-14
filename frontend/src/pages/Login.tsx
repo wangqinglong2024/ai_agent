@@ -1,14 +1,9 @@
 /**
- * 登录 / 注册页面 - 炫酷磨砂视觉
+ * 登录 / 注册页面 - 炫酷磨砂视觉 (HeroUI V3)
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Input,
-  Button,
-  Tabs,
-  Tab,
-} from "@heroui/react";
+import { Button, Tabs, TextField, Label, Input } from "@heroui/react";
 import { useAuthStore } from "@/stores/authStore";
 import BackgroundScene from "@/components/three/BackgroundScene";
 
@@ -58,6 +53,9 @@ export default function Login() {
     }
   };
 
+  const inputClassName =
+    "w-full bg-white/[0.03] border border-white/10 hover:border-violet-500/50 focus:border-violet-500 transition-all duration-300 rounded-xl px-4 py-3 text-white placeholder:text-neutral-500 outline-none";
+
   return (
     <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden">
       {/* Three.js 粒子宇宙背景 */}
@@ -78,7 +76,7 @@ export default function Login() {
             <span className="text-2xl font-black text-white">i</span>
           </div>
           <h1 className="text-4xl font-extrabold glow-text mb-2">Ideas.top</h1>
-          <p className="text-default-400 text-sm tracking-wide">智能 AI 助手平台</p>
+          <p className="text-neutral-400 text-sm tracking-wide">智能 AI 助手平台</p>
         </div>
 
         {/* 磨砂登录卡片 */}
@@ -91,103 +89,123 @@ export default function Login() {
               setError("");
               setSuccess("");
             }}
-            fullWidth
-            size="lg"
-            classNames={{
-              tabList: "bg-white/5 border border-white/5 rounded-xl p-1",
-              cursor: "bg-gradient-to-r from-violet-600 to-cyan-500 rounded-lg shadow-lg shadow-violet-500/20",
-              tab: "h-10 text-sm font-medium",
-              tabContent: "group-data-[selected=true]:text-white text-default-400",
-            }}
             className="mb-8"
           >
-            <Tab key="login" title="登录" />
-            <Tab key="signup" title="注册" />
-          </Tabs>
+            <Tabs.List className="bg-white/5 border border-white/5 rounded-xl p-1 flex">
+              <Tabs.Tab
+                id="login"
+                className="flex-1 h-10 text-sm font-medium rounded-lg text-center cursor-pointer transition-all data-[selected]:bg-gradient-to-r data-[selected]:from-violet-600 data-[selected]:to-cyan-500 data-[selected]:text-white data-[selected]:shadow-lg data-[selected]:shadow-violet-500/20 text-neutral-400 flex items-center justify-center"
+              >
+                登录
+              </Tabs.Tab>
+              <Tabs.Tab
+                id="signup"
+                className="flex-1 h-10 text-sm font-medium rounded-lg text-center cursor-pointer transition-all data-[selected]:bg-gradient-to-r data-[selected]:from-violet-600 data-[selected]:to-cyan-500 data-[selected]:text-white data-[selected]:shadow-lg data-[selected]:shadow-violet-500/20 text-neutral-400 flex items-center justify-center"
+              >
+                注册
+              </Tabs.Tab>
+            </Tabs.List>
 
-          <div className="space-y-5" onKeyDown={handleKeyDown}>
-            {tab === "signup" && (
-              <div className="animate-fade-up">
-                <Input
-                  label="昵称"
-                  placeholder="输入你的昵称"
-                  value={nickname}
-                  onValueChange={setNickname}
-                  variant="bordered"
+            <Tabs.Panel id="login">
+              <div className="space-y-5 mt-6" onKeyDown={handleKeyDown}>
+                <TextField value={email} onChange={setEmail}>
+                  <Label className="text-neutral-400 text-sm mb-1 block">邮箱</Label>
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    className={inputClassName}
+                  />
+                </TextField>
+
+                <TextField value={password} onChange={setPassword}>
+                  <Label className="text-neutral-400 text-sm mb-1 block">密码</Label>
+                  <Input
+                    type="password"
+                    placeholder="至少 6 位"
+                    className={inputClassName}
+                  />
+                </TextField>
+
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5 animate-fade-up">
+                    <p className="text-red-400 text-sm text-center">{error}</p>
+                  </div>
+                )}
+
+                <Button
                   size="lg"
-                  classNames={{
-                    inputWrapper: "bg-white/[0.03] border-white/10 hover:border-violet-500/50 focus-within:!border-violet-500 transition-all duration-300",
-                    label: "text-default-400",
-                    input: "text-white placeholder:text-default-500",
-                  }}
-                />
+                  isDisabled={loading}
+                  onPress={handleLogin}
+                  className="btn-glow text-white font-semibold h-12 text-base rounded-xl mt-2 w-full"
+                >
+                  {loading ? "登录中..." : "登 录"}
+                </Button>
               </div>
-            )}
+            </Tabs.Panel>
 
-            <Input
-              label="邮箱"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onValueChange={setEmail}
-              variant="bordered"
-              size="lg"
-              isRequired
-              classNames={{
-                inputWrapper: "bg-white/[0.03] border-white/10 hover:border-violet-500/50 focus-within:!border-violet-500 transition-all duration-300",
-                label: "text-default-400",
-                input: "text-white placeholder:text-default-500",
-              }}
-            />
+            <Tabs.Panel id="signup">
+              <div className="space-y-5 mt-6" onKeyDown={handleKeyDown}>
+                <TextField value={nickname} onChange={setNickname}>
+                  <Label className="text-neutral-400 text-sm mb-1 block">昵称</Label>
+                  <Input
+                    placeholder="输入你的昵称"
+                    className={inputClassName}
+                  />
+                </TextField>
 
-            <Input
-              label="密码"
-              type="password"
-              placeholder="至少 6 位"
-              value={password}
-              onValueChange={setPassword}
-              variant="bordered"
-              size="lg"
-              isRequired
-              classNames={{
-                inputWrapper: "bg-white/[0.03] border-white/10 hover:border-violet-500/50 focus-within:!border-violet-500 transition-all duration-300",
-                label: "text-default-400",
-                input: "text-white placeholder:text-default-500",
-              }}
-            />
+                <TextField value={email} onChange={setEmail}>
+                  <Label className="text-neutral-400 text-sm mb-1 block">邮箱</Label>
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    className={inputClassName}
+                  />
+                </TextField>
 
-            {error && (
-              <div className="bg-danger/10 border border-danger/20 rounded-lg px-4 py-2.5 animate-fade-up">
-                <p className="text-danger text-sm text-center">{error}</p>
+                <TextField value={password} onChange={setPassword}>
+                  <Label className="text-neutral-400 text-sm mb-1 block">密码</Label>
+                  <Input
+                    type="password"
+                    placeholder="至少 6 位"
+                    className={inputClassName}
+                  />
+                </TextField>
+
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5 animate-fade-up">
+                    <p className="text-red-400 text-sm text-center">{error}</p>
+                  </div>
+                )}
+                {success && (
+                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-4 py-2.5 animate-fade-up">
+                    <p className="text-green-400 text-sm text-center">{success}</p>
+                  </div>
+                )}
+
+                <Button
+                  size="lg"
+                  isDisabled={loading}
+                  onPress={handleSignUp}
+                  className="btn-glow text-white font-semibold h-12 text-base rounded-xl mt-2 w-full"
+                >
+                  {loading ? "注册中..." : "注 册"}
+                </Button>
               </div>
-            )}
-            {success && (
-              <div className="bg-success/10 border border-success/20 rounded-lg px-4 py-2.5 animate-fade-up">
-                <p className="text-success text-sm text-center">{success}</p>
-              </div>
-            )}
-
-            <Button
-              fullWidth
-              size="lg"
-              isLoading={loading}
-              onPress={tab === "login" ? handleLogin : handleSignUp}
-              className="btn-glow text-white font-semibold h-12 text-base rounded-xl mt-2"
-            >
-              {tab === "login" ? "登 录" : "注 册"}
-            </Button>
-          </div>
+            </Tabs.Panel>
+          </Tabs>
 
           {/* 底部装饰 */}
           <div className="mt-8 flex items-center gap-3">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <span className="text-[10px] text-default-500 tracking-widest uppercase">Powered by AI</span>
+            <span className="text-[10px] text-neutral-500 tracking-widest uppercase">
+              Powered by AI
+            </span>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           </div>
         </div>
 
         {/* 底部版权 */}
-        <p className="text-center text-[11px] text-default-500 mt-6 tracking-wide">
+        <p className="text-center text-[11px] text-neutral-500 mt-6 tracking-wide">
           &copy; 2026 Ideas.top · Dify + Supabase
         </p>
       </div>

@@ -1,5 +1,5 @@
 /**
- * 首页 - 高端科技感展示页
+ * 首页 - 高端科技感展示页 (HeroUI V3)
  */
 import { useNavigate } from "react-router-dom";
 import { Button } from "@heroui/react";
@@ -15,7 +15,7 @@ export default function Home() {
 
       {/* 主标题区域 */}
       <div className="text-center mb-12 animate-fade-up">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-6 text-xs text-default-400 tracking-wider">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-6 text-xs text-neutral-400 tracking-wider">
           <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
           AI 智能平台已就绪
         </div>
@@ -26,10 +26,10 @@ export default function Home() {
           <span className="text-gradient-accent">top</span>
         </h1>
 
-        <p className="text-lg md:text-xl text-default-400 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed">
           发布指令，AI 为你思考
           <br />
-          <span className="text-default-500">
+          <span className="text-neutral-500">
             对接 Dify 工作流 · Openclaw 多模型 · 企微飞书多通道
           </span>
         </p>
@@ -43,7 +43,6 @@ export default function Home() {
             title: "智能对话",
             desc: "多轮上下文对话，SSE 流式实时输出",
             color: "from-violet-500/20 to-violet-600/5",
-            borderColor: "hover:border-violet-500/30",
             delay: "animate-fade-up-delay-1",
           },
           {
@@ -51,7 +50,6 @@ export default function Home() {
             title: "工作流引擎",
             desc: "Dify 可视化工作流，一键触发自动化任务",
             color: "from-cyan-500/20 to-cyan-600/5",
-            borderColor: "hover:border-cyan-500/30",
             delay: "animate-fade-up-delay-2",
           },
           {
@@ -59,7 +57,6 @@ export default function Home() {
             title: "多模型接入",
             desc: "Openclaw 多通道调度，企微飞书无缝协作",
             color: "from-pink-500/20 to-pink-600/5",
-            borderColor: "hover:border-pink-500/30",
             delay: "animate-fade-up-delay-3",
           },
         ].map((item) => (
@@ -68,14 +65,13 @@ export default function Home() {
             className={`glass-card rounded-2xl p-6 cursor-pointer group ${item.delay}`}
             onClick={() => navigate("/chat")}
           >
-            {/* 顶部光晕 */}
             <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform duration-300`}>
               {item.icon}
             </div>
             <h3 className="text-lg font-bold text-white/90 mb-2 group-hover:text-gradient transition-all">
               {item.title}
             </h3>
-            <p className="text-sm text-default-400 leading-relaxed">
+            <p className="text-sm text-neutral-400 leading-relaxed">
               {item.desc}
             </p>
           </div>
@@ -96,21 +92,21 @@ export default function Home() {
         </Button>
         <Button
           size="lg"
-          variant="bordered"
-          className="border-white/10 text-default-300 hover:border-violet-500/30 hover:text-white px-8 h-13 rounded-xl transition-all duration-300"
+          variant="outline"
+          className="border-white/10 text-neutral-300 hover:border-violet-500/30 hover:text-white px-8 h-13 rounded-xl transition-all duration-300"
         >
           了解更多
         </Button>
       </div>
 
       {/* 底部技术栈标记 */}
-      <div className="mt-16 flex items-center gap-6 text-[11px] text-default-500 tracking-widest uppercase animate-fade-up-delay-3">
+      <div className="mt-16 flex items-center gap-6 text-[11px] text-neutral-500 tracking-widest uppercase animate-fade-up-delay-3">
         <span>Supabase</span>
-        <span className="w-1 h-1 rounded-full bg-default-600" />
+        <span className="w-1 h-1 rounded-full bg-neutral-600" />
         <span>FastAPI</span>
-        <span className="w-1 h-1 rounded-full bg-default-600" />
+        <span className="w-1 h-1 rounded-full bg-neutral-600" />
         <span>Dify</span>
-        <span className="w-1 h-1 rounded-full bg-default-600" />
+        <span className="w-1 h-1 rounded-full bg-neutral-600" />
         <span>Openclaw</span>
       </div>
     </div>

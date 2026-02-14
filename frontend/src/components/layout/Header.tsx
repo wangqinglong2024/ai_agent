@@ -1,16 +1,13 @@
 /**
- * 顶部导航栏 - 全磨砂透明
+ * 顶部导航栏 - 磨砂透明 (HeroUI V3 - 无 Navbar 组件)
  */
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
   Button,
   Avatar,
   Dropdown,
   DropdownTrigger,
+  DropdownPopover,
   DropdownMenu,
   DropdownItem,
 } from "@heroui/react";
@@ -27,18 +24,14 @@ export default function Header() {
     navigate("/login");
   };
 
-  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + "/");
 
   return (
-    <Navbar
-      maxWidth="full"
-      classNames={{
-        base: "glass border-b border-white/[0.04] py-1",
-        wrapper: "px-4 md:px-8",
-      }}
-    >
-      <NavbarBrand
-        className="cursor-pointer gap-3 group"
+    <nav className="glass border-b border-white/[0.04] py-2 px-4 md:px-8 flex items-center justify-between">
+      {/* 左侧 Logo */}
+      <div
+        className="flex items-center gap-3 cursor-pointer group"
         onClick={() => navigate("/")}
       >
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-violet-500/20 transition-all duration-300">
@@ -47,84 +40,71 @@ export default function Header() {
         <span className="text-lg font-bold text-gradient hidden sm:inline">
           Ideas.top
         </span>
-      </NavbarBrand>
+      </div>
 
-      <NavbarContent justify="center">
-        <NavbarItem>
-          <Button
-            variant="light"
-            onPress={() => navigate("/")}
-            className={`font-medium text-sm transition-all duration-300 ${
-              isActive("/") && !isActive("/chat")
-                ? "text-white"
-                : "text-default-400 hover:text-white"
-            }`}
-          >
-            {isActive("/") && !isActive("/chat") && (
-              <span className="w-1 h-1 rounded-full bg-violet-400 mr-1.5" />
-            )}
-            首页
-          </Button>
-        </NavbarItem>
-        <NavbarItem>
-          <Button
-            variant="light"
-            onPress={() => navigate("/chat")}
-            className={`font-medium text-sm transition-all duration-300 ${
-              isActive("/chat")
-                ? "text-white"
-                : "text-default-400 hover:text-white"
-            }`}
-          >
-            {isActive("/chat") && (
-              <span className="w-1 h-1 rounded-full bg-cyan-400 mr-1.5" />
-            )}
-            对话
-          </Button>
-        </NavbarItem>
-      </NavbarContent>
+      {/* 中间导航 */}
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          onPress={() => navigate("/")}
+          className={`font-medium text-sm transition-all duration-300 ${
+            isActive("/") && !isActive("/chat")
+              ? "text-white"
+              : "text-neutral-400 hover:text-white"
+          }`}
+        >
+          {isActive("/") && !isActive("/chat") && (
+            <span className="w-1 h-1 rounded-full bg-violet-400 mr-1.5" />
+          )}
+          首页
+        </Button>
+        <Button
+          variant="ghost"
+          onPress={() => navigate("/chat")}
+          className={`font-medium text-sm transition-all duration-300 ${
+            isActive("/chat")
+              ? "text-white"
+              : "text-neutral-400 hover:text-white"
+          }`}
+        >
+          {isActive("/chat") && (
+            <span className="w-1 h-1 rounded-full bg-cyan-400 mr-1.5" />
+          )}
+          对话
+        </Button>
+      </div>
 
-      <NavbarContent justify="end">
-        <NavbarItem>
-          <Dropdown
-            placement="bottom-end"
-            classNames={{
-              content: "glass-card border border-white/[0.06] min-w-[200px]",
-            }}
-          >
-            <DropdownTrigger>
-              <Avatar
-                as="button"
-                size="sm"
-                name={user?.email?.charAt(0).toUpperCase() || "U"}
-                classNames={{
-                  base: "bg-gradient-to-br from-violet-500 to-cyan-400 transition-all hover:shadow-md hover:shadow-violet-500/20",
-                  name: "text-white font-bold text-xs",
-                }}
-              />
-            </DropdownTrigger>
-            <DropdownMenu
-              aria-label="用户菜单"
-              itemClasses={{
-                base: "rounded-lg data-[hover=true]:bg-white/5",
-              }}
+      {/* 右侧用户菜单 */}
+      <Dropdown>
+        <DropdownTrigger>
+          <Button variant="ghost" isIconOnly className="rounded-full">
+            <Avatar size="sm" className="bg-gradient-to-br from-violet-500 to-cyan-400">
+              <Avatar.Fallback className="text-white font-bold text-xs">
+                {user?.email?.charAt(0).toUpperCase() || "U"}
+              </Avatar.Fallback>
+            </Avatar>
+          </Button>
+        </DropdownTrigger>
+        <DropdownPopover className="glass-card border border-white/[0.06] min-w-[200px]">
+          <DropdownMenu>
+            <DropdownItem
+              id="email"
+              textValue="用户邮箱"
+              className="h-14 gap-2 rounded-lg"
             >
-              <DropdownItem key="email" className="h-14 gap-2" textValue="用户邮箱">
-                <p className="font-semibold text-white/80 text-sm">已登录</p>
-                <p className="text-xs text-default-400">{user?.email}</p>
-              </DropdownItem>
-              <DropdownItem
-                key="logout"
-                color="danger"
-                onPress={handleSignOut}
-                className="text-sm"
-              >
-                退出登录
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        </NavbarItem>
-      </NavbarContent>
-    </Navbar>
+              <p className="font-semibold text-white/80 text-sm">已登录</p>
+              <p className="text-xs text-neutral-400">{user?.email}</p>
+            </DropdownItem>
+            <DropdownItem
+              id="logout"
+              onAction={handleSignOut}
+              className="text-sm text-red-400 rounded-lg"
+            >
+              退出登录
+            </DropdownItem>
+          </DropdownMenu>
+        </DropdownPopover>
+      </Dropdown>
+    </nav>
   );
 }

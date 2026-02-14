@@ -1,5 +1,5 @@
 /**
- * 对话窗口 - 消息展示区域
+ * 对话窗口 - 消息展示区域 (HeroUI V3)
  */
 import { useEffect, useRef } from "react";
 import { Spinner } from "@heroui/react";
@@ -21,7 +21,7 @@ export default function ChatWindow() {
   if (loadingMessages) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Spinner size="lg" color="white" />
+        <Spinner size="lg" />
       </div>
     );
   }

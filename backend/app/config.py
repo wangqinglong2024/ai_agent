@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     OPENCLAW_API_KEY: str = ""
 
     # CORS
-    CORS_ORIGINS: str = "http://localhost:5173,https://ideas.top"
+    CORS_ORIGINS: str = "http://localhost:5173,http://localhost"
 
     @property
     def cors_origins_list(self) -> list[str]:

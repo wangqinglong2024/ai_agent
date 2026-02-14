@@ -1,14 +1,14 @@
 /**
- * 对话页面
+ * 对话页面 (HeroUI V3)
  * 左侧: 磨砂对话列表  |  右侧: 消息窗口 + 输入框
  */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Button,
-  Listbox,
-  ListboxItem,
   Spinner,
+  ListBox,
+  ListBoxItem,
 } from "@heroui/react";
 import { useChat } from "@/hooks/useChat";
 import ChatWindow from "@/components/chat/ChatWindow";
@@ -67,9 +67,8 @@ export default function Chat() {
           <h2 className="text-sm font-semibold text-white/60 tracking-wide uppercase">对话</h2>
           <Button
             size="sm"
-            variant="flat"
             onPress={handleNew}
-            className="btn-glow text-xs px-3 h-7"
+            className="btn-glow text-xs px-3 h-7 text-white"
           >
             + 新建
           </Button>
@@ -81,46 +80,49 @@ export default function Chat() {
         <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
           {loadingConversations ? (
             <div className="flex justify-center py-10">
-              <Spinner size="sm" color="white" />
+              <Spinner size="sm" />
             </div>
           ) : conversations.length === 0 ? (
             <div className="text-center py-12 text-white/30 text-sm">
               暂无对话，创建一个开始
             </div>
           ) : (
-            <Listbox
+            <ListBox
               aria-label="对话列表"
               selectionMode="single"
               selectedKeys={activeConversationId ? new Set([activeConversationId]) : new Set()}
-              onAction={(key) => handleSelect(key as string)}
-              itemClasses={{
-                base: "rounded-xl data-[hover=true]:bg-white/[0.04] data-[selected=true]:bg-white/[0.06] transition-all duration-200 mb-1",
+              onSelectionChange={(keys) => {
+                const selected = [...keys][0];
+                if (selected) handleSelect(selected as string);
               }}
             >
               {conversations.map((conv) => (
-                <ListboxItem
+                <ListBoxItem
                   key={conv.id}
+                  id={conv.id}
                   textValue={conv.title}
-                  endContent={
-                    <Button
-                      size="sm"
-                      variant="light"
-                      isIconOnly
-                      onPress={() => handleDelete(conv.id)}
-                      className="opacity-0 group-hover:opacity-100 min-w-5 h-5 text-white/30 hover:text-red-400"
+                  className="rounded-xl px-3 py-2.5 mb-1 cursor-pointer transition-all duration-200 hover:bg-white/[0.04] data-[selected]:bg-white/[0.06] group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm text-white/70">{conv.title}</div>
+                      <div className="text-[11px] text-white/25 mt-0.5">
+                        {new Date(conv.updated_at).toLocaleDateString("zh-CN")}
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(conv.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 min-w-5 h-5 text-white/30 hover:text-red-400 transition-opacity"
                     >
                       ×
-                    </Button>
-                  }
-                  className="group px-3 py-2.5"
-                >
-                  <div className="truncate text-sm text-white/70">{conv.title}</div>
-                  <div className="text-[11px] text-white/25 mt-0.5">
-                    {new Date(conv.updated_at).toLocaleDateString("zh-CN")}
+                    </button>
                   </div>
-                </ListboxItem>
+                </ListBoxItem>
               ))}
-            </Listbox>
+            </ListBox>
           )}
         </div>
       </aside>
@@ -135,7 +137,7 @@ export default function Chat() {
         <div className="md:hidden p-2 border-b border-white/[0.04]">
           <Button
             size="sm"
-            variant="light"
+            variant="ghost"
             onPress={() => setShowSidebar(true)}
             className="text-white/50 hover:text-white"
           >
@@ -161,7 +163,7 @@ export default function Chat() {
               <p className="text-white/30 text-sm">选择一个对话或创建新对话</p>
               <Button
                 onPress={handleNew}
-                className="btn-glow px-6"
+                className="btn-glow px-6 text-white"
               >
                 开始对话
               </Button>

@@ -27,10 +27,27 @@ export const useAuthStore = create<AuthState>((set) => ({
   loading: true,
 
   initialize: () => {
+    // 超时保护：5秒后若仍在加载则强制结束（Supabase 连不上时不卡死）
+    const timeout = setTimeout(() => {
+      const state = useAuthStore.getState();
+      if (state.loading) {
+        console.warn("⚠️ Supabase 认证超时，强制跳转登录");
+        set({ loading: false });
+      }
+    }, 5000);
+
     // 获取当前会话
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      set({ session, user: session?.user ?? null, loading: false });
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        clearTimeout(timeout);
+        set({ session, user: session?.user ?? null, loading: false });
+      })
+      .catch((err) => {
+        clearTimeout(timeout);
+        console.error("❌ Supabase 认证失败:", err);
+        set({ loading: false });
+      });
 
     // 监听认证状态变化
     const {
@@ -40,7 +57,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
 
     // 返回清理函数
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   },
 
   signIn: async (email, password) => {

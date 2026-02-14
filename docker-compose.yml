@@ -15,10 +15,14 @@ services:
     restart: always
     env_file:
       - ./backend/.env
+    # 让容器能访问宿主机 (Dify / Openclaw 等宿主机服务)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     expose:
       - "8080"
     networks:
       - gateway_net
+      - global-data-link      # Supabase 内部通信
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -38,12 +42,15 @@ services:
       - "80"
     networks:
       - gateway_net
+      - global-data-link
     depends_on:
       - backend
 
 # ==============================================================================
-# 网络 - 加入全局网关网络
+# 网络
 # ==============================================================================
 networks:
   gateway_net:
+    external: true
+  global-data-link:
     external: true

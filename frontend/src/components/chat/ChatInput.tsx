@@ -1,8 +1,8 @@
 /**
- * 对话输入框 - 磨砂浮动
+ * 对话输入框 - 磨砂浮动 (HeroUI V3)
  */
 import { useState, useCallback } from "react";
-import { Textarea, Button } from "@heroui/react";
+import { Button, TextArea } from "@heroui/react";
 import { useChatStore } from "@/stores/chatStore";
 
 export default function ChatInput() {
@@ -28,30 +28,23 @@ export default function ChatInput() {
   return (
     <div className="border-t border-white/[0.04] glass p-4">
       <div className="max-w-4xl mx-auto flex gap-3 items-end">
-        <Textarea
+        <textarea
           value={input}
-          onValueChange={setInput}
+          onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={
             activeConversationId
               ? "输入消息... (Enter 发送, Shift+Enter 换行)"
               : "请先选择或创建一个对话"
           }
-          minRows={1}
-          maxRows={6}
-          isDisabled={!activeConversationId || streaming}
-          classNames={{
-            inputWrapper:
-              "bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] focus-within:border-violet-500/30 transition-all duration-300 rounded-xl",
-            input: "text-white/80 placeholder:text-white/20",
-          }}
-          className="flex-1"
+          rows={1}
+          disabled={!activeConversationId || streaming}
+          className="flex-1 resize-none bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] focus:border-violet-500/30 transition-all duration-300 rounded-xl px-4 py-3 text-white/80 placeholder:text-white/20 outline-none disabled:opacity-50"
         />
         <Button
-          isLoading={streaming}
-          isDisabled={!input.trim() || !activeConversationId}
+          isDisabled={!input.trim() || !activeConversationId || streaming}
           onPress={handleSend}
-          className="btn-glow min-w-[80px] h-10"
+          className="btn-glow min-w-[80px] h-10 text-white"
         >
           {streaming ? (
             <span className="flex items-center gap-1.5">
