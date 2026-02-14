@@ -1,0 +1,43 @@
+# ==============================================================================
+# Ideas.top C端应用 - 本地开发环境 Docker Compose
+# 仅运行前后端代码，所有外部服务调用云服务器
+# ==============================================================================
+
+services:
+  # --------------------------------------------------------------------------
+  # FastAPI 后端 (热重载模式)
+  # --------------------------------------------------------------------------
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ideas-backend-dev
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/app:/app/app    # 挂载源码，支持热重载
+    environment:
+      - ENV=development
+
+  # --------------------------------------------------------------------------
+  # React 前端 (Vite Dev Server)
+  # --------------------------------------------------------------------------
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev                 # 使用多阶段构建的 dev 阶段
+    container_name: ideas-frontend-dev
+    command: npm run dev -- --host 0.0.0.0
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src   # 挂载源码，支持热重载
+      - ./frontend/index.html:/app/index.html
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend-dev
