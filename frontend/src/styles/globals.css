@@ -29,6 +29,7 @@
   --gradient-to: #06b6d4;
   --three-bg: #eef1f7;
   --three-fog: #eef1f7;
+  --dropdown-bg: #ffffff;
 }
 
 .dark {
@@ -52,6 +53,7 @@
   --gradient-to: #22d3ee;
   --three-bg: #050510;
   --three-fog: #050510;
+  --dropdown-bg: #111118;
 }
 
 /* 默认暗色 */

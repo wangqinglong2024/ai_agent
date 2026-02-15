@@ -6,6 +6,7 @@ import { useThemeStore } from "@/stores/themeStore";
 import Layout from "@/components/layout/Layout";
 import Chat from "@/pages/Chat";
 import Login from "@/pages/Login";
+import ChangePassword from "@/pages/ChangePassword";
 
 /** 同步主题到 DOM */
 function ThemeSync() {
@@ -77,6 +78,7 @@ export default function App() {
           <Route index element={<Navigate to="/chat" replace />} />
           <Route path="chat" element={<Chat />} />
           <Route path="chat/:conversationId" element={<Chat />} />
+          <Route path="change-password" element={<ChangePassword />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

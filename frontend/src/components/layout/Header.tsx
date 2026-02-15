@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, getDisplayUsername } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useState, useRef, useEffect } from "react";
 
@@ -68,15 +68,24 @@ export default function Header() {
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[var(--btn-primary)] text-[var(--bg-base)] font-semibold text-sm"
           >
-            {user?.email?.charAt(0).toUpperCase() || "U"}
+            {(getDisplayUsername(user) || "U").charAt(0).toUpperCase()}
           </button>
 
           {menuOpen && (
-            <div className="glass-card absolute right-0 top-full z-50 mt-2 min-w-[200px] overflow-hidden rounded-xl py-2 shadow-xl">
+            <div className="absolute right-0 top-full z-50 mt-2 min-w-[200px] overflow-hidden rounded-xl border border-[var(--glass-border)] bg-[var(--dropdown-bg)] py-2 shadow-xl">
               <div className="border-b border-[var(--glass-border)] px-4 py-3">
                 <p className="text-xs text-[var(--text-muted)]">已登录</p>
-                <p className="truncate text-sm font-medium text-[var(--text-primary)]">{user?.email}</p>
+                <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                  {getDisplayUsername(user)}
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => { setMenuOpen(false); navigate("/change-password"); }}
+                className="w-full px-4 py-2.5 text-left text-sm text-[var(--text-primary)] transition-colors hover:bg-[var(--input-bg)]"
+              >
+                更改密码
+              </button>
               <button
                 type="button"
                 onClick={handleSignOut}
