@@ -1,183 +1,168 @@
 /**
- * Three.js 超炫粒子宇宙背景
- * - 星云级粒子场：多层不同颜色/速度的粒子
- * - 鼠标交互：粒子跟随鼠标方向缓慢飘动
- * - 呼吸光效：核心光球脉冲发光
+ * 高级磨砂质感背景 - 细腻粒子场
+ * 支持明暗双主题，优雅不喧宾夺主
  */
-import { useRef, useMemo, useCallback } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Points, PointMaterial, Float } from "@react-three/drei";
 import * as THREE from "three";
+import { useThemeStore } from "@/stores/themeStore";
 
-/** 生成球形分布的随机点 */
-function genSphere(count: number, radius: number): Float32Array {
+function generateStarfield(count: number, radius: number): Float32Array {
   const pos = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
-    const t = Math.random() * Math.PI * 2;
-    const p = Math.acos(2 * Math.random() - 1);
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
     const r = radius * Math.cbrt(Math.random());
-    pos[i * 3] = r * Math.sin(p) * Math.cos(t);
-    pos[i * 3 + 1] = r * Math.sin(p) * Math.sin(t);
-    pos[i * 3 + 2] = r * Math.cos(p);
+    pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    pos[i * 3 + 2] = r * Math.cos(phi);
   }
   return pos;
 }
 
-/** 主粒子层 - 紫色旋转星云 */
-function PrimaryNebula() {
+function ParticleField() {
   const ref = useRef<THREE.Points>(null);
-  const positions = useMemo(() => genSphere(3000, 6), []);
+  const theme = useThemeStore((s) => s.theme);
+  const count = 2500;
+  const positions = useMemo(() => generateStarfield(count, 8), []);
+
+  const color = theme === "dark" ? new THREE.Color("#6b5ce7") : new THREE.Color("#94a3b8");
+  const opacity = theme === "dark" ? 0.4 : 0.25;
+  const size = theme === "dark" ? 0.012 : 0.008;
 
   useFrame((state, delta) => {
     if (!ref.current) return;
-    ref.current.rotation.y += delta * 0.015;
-    ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.05;
+    ref.current.rotation.y += delta * 0.02;
+    ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.08) * 0.04;
   });
 
   return (
-    <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
-      <PointMaterial
+    <points ref={ref} frustumCulled={false}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
         transparent
-        color="#8b5cf6"
-        size={0.018}
+        size={size}
         sizeAttenuation
         depthWrite={false}
-        opacity={0.7}
+        opacity={opacity}
+        color={color}
         blending={THREE.AdditiveBlending}
       />
-    </Points>
+    </points>
   );
 }
 
-/** 次级粒子层 - 青色反向旋转 */
-function SecondaryNebula() {
+function SecondaryLayer() {
   const ref = useRef<THREE.Points>(null);
-  const positions = useMemo(() => genSphere(2000, 5), []);
+  const theme = useThemeStore((s) => s.theme);
+  const positions = useMemo(() => generateStarfield(1200, 6), []);
+
+  const color = theme === "dark" ? new THREE.Color("#22d3ee") : new THREE.Color("#64748b");
+  const opacity = theme === "dark" ? 0.2 : 0.12;
 
   useFrame((state, delta) => {
     if (!ref.current) return;
-    ref.current.rotation.y -= delta * 0.01;
-    ref.current.rotation.z = Math.cos(state.clock.elapsedTime * 0.08) * 0.03;
+    ref.current.rotation.y -= delta * 0.015;
+    ref.current.rotation.z = Math.cos(state.clock.elapsedTime * 0.06) * 0.02;
   });
 
   return (
-    <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
-      <PointMaterial
+    <points ref={ref} frustumCulled={false}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
         transparent
-        color="#22d3ee"
-        size={0.012}
-        sizeAttenuation
-        depthWrite={false}
-        opacity={0.5}
-        blending={THREE.AdditiveBlending}
-      />
-    </Points>
-  );
-}
-
-/** 第三层 - 粉色远景微粒 */
-function DistantStars() {
-  const ref = useRef<THREE.Points>(null);
-  const positions = useMemo(() => genSphere(1500, 8), []);
-
-  useFrame((_, delta) => {
-    if (!ref.current) return;
-    ref.current.rotation.y += delta * 0.005;
-    ref.current.rotation.x += delta * 0.003;
-  });
-
-  return (
-    <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
-      <PointMaterial
-        transparent
-        color="#f472b6"
         size={0.008}
         sizeAttenuation
         depthWrite={false}
-        opacity={0.35}
+        opacity={opacity}
+        color={color}
         blending={THREE.AdditiveBlending}
       />
-    </Points>
+    </points>
   );
 }
 
-/** 核心发光球体 - 呼吸脉冲 */
-function CoreGlow() {
+function AmbientGlow() {
   const meshRef = useRef<THREE.Mesh>(null);
+  const theme = useThemeStore((s) => s.theme);
 
   useFrame((state) => {
     if (!meshRef.current) return;
     const t = state.clock.elapsedTime;
-    const scale = 1 + Math.sin(t * 0.5) * 0.15;
+    const scale = 1 + Math.sin(t * 0.3) * 0.08;
     meshRef.current.scale.setScalar(scale);
     (meshRef.current.material as THREE.MeshBasicMaterial).opacity =
-      0.04 + Math.sin(t * 0.8) * 0.02;
+      0.02 + Math.sin(t * 0.5) * 0.01;
   });
 
+  const color = theme === "dark" ? "#4c1d95" : "#cbd5e1";
+
   return (
-    <mesh ref={meshRef} position={[0, 0, -2]}>
-      <sphereGeometry args={[2.5, 32, 32]} />
+    <mesh ref={meshRef} position={[0, 0, -3]}>
+      <sphereGeometry args={[2.2, 32, 32]} />
       <meshBasicMaterial
-        color="#7c3aed"
+        color={color}
         transparent
-        opacity={0.05}
+        opacity={0.03}
         blending={THREE.AdditiveBlending}
       />
     </mesh>
   );
 }
 
-/** 鼠标跟随相机微调 */
 function CameraRig() {
   const { camera } = useThree();
   const mouse = useRef({ x: 0, y: 0 });
 
-  const handlePointerMove = useCallback((e: { clientX: number; clientY: number }) => {
-    mouse.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
-    mouse.current.y = (e.clientY / window.innerHeight - 0.5) * 2;
+  useEffect(() => {
+    const handler = (e: PointerEvent) => {
+      mouse.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouse.current.y = (e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    window.addEventListener("pointermove", handler);
+    return () => window.removeEventListener("pointermove", handler);
   }, []);
 
   useFrame(() => {
-    camera.position.x += (mouse.current.x * 0.3 - camera.position.x) * 0.02;
-    camera.position.y += (-mouse.current.y * 0.3 - camera.position.y) * 0.02;
+    camera.position.x += (mouse.current.x * 0.2 - camera.position.x) * 0.015;
+    camera.position.y += (-mouse.current.y * 0.2 - camera.position.y) * 0.015;
     camera.lookAt(0, 0, 0);
   });
-
-  // 监听鼠标 - 在 useFrame 内无法获取事件，需要通过 window
-  if (typeof window !== "undefined") {
-    window.onmousemove = handlePointerMove;
-  }
 
   return null;
 }
 
 export default function BackgroundScene() {
+  const theme = useThemeStore((s) => s.theme);
+  const bgColor = theme === "dark" ? "#050508" : "#f0f2f5";
+  const fogColor = theme === "dark" ? "#050508" : "#f0f2f5";
+
   return (
     <Canvas
-      camera={{ position: [0, 0, 5], fov: 60 }}
+      camera={{ position: [0, 0, 5], fov: 55 }}
       style={{ width: "100%", height: "100%" }}
-      gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+      gl={{
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      }}
       dpr={[1, 1.5]}
     >
-      <color attach="background" args={["#050510"]} />
-      <fog attach="fog" args={["#050510", 5, 15]} />
+      <color attach="background" args={[bgColor]} />
+      <fog attach="fog" args={[fogColor, 6, 18]} />
 
       <CameraRig />
 
-      {/* 环境光 */}
-      <ambientLight intensity={0.15} color="#8b5cf6" />
-      <pointLight position={[0, 0, 0]} intensity={0.5} color="#7c3aed" distance={10} />
-      <pointLight position={[3, 2, -3]} intensity={0.3} color="#06b6d4" distance={8} />
+      <ambientLight intensity={0.1} />
+      <pointLight position={[0, 0, 2]} intensity={0.3} color="#ffffff" distance={10} />
 
-      {/* 核心光球 */}
-      <Float speed={1} rotationIntensity={0.2} floatIntensity={0.5}>
-        <CoreGlow />
-      </Float>
-
-      {/* 三层粒子星云 */}
-      <PrimaryNebula />
-      <SecondaryNebula />
-      <DistantStars />
+      <AmbientGlow />
+      <ParticleField />
+      <SecondaryLayer />
     </Canvas>
   );
 }

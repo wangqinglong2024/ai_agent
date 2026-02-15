@@ -27,6 +27,8 @@ interface ChatState {
   streaming: boolean;
   /** 正在流式生成的内容 */
   streamingContent: string;
+  /** 错误信息（发送失败时） */
+  sendError: string | null;
 
   /** 加载对话列表 */
   fetchConversations: () => Promise<void>;
@@ -48,6 +50,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   loadingMessages: false,
   streaming: false,
   streamingContent: "",
+  sendError: null,
 
   fetchConversations: async () => {
     set({ loadingConversations: true });
@@ -111,6 +114,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       messages: [...state.messages, userMsg],
       streaming: true,
       streamingContent: "",
+      sendError: null,
     }));
 
     await sendMessage(
@@ -143,7 +147,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // onError
       (error) => {
         console.error("消息发送失败:", error);
-        set({ streaming: false, streamingContent: "" });
+        set({ streaming: false, streamingContent: "", sendError: error });
       }
     );
   },

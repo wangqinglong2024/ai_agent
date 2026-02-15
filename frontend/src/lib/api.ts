@@ -132,6 +132,7 @@ export async function sendMessage(
   }
 
   const decoder = new TextDecoder();
+  let pendingEvent = "";
 
   while (true) {
     const { done, value } = await reader.read();
@@ -141,17 +142,22 @@ export async function sendMessage(
     const lines = text.split("\n");
 
     for (const line of lines) {
+      if (line.startsWith("event: ")) {
+        pendingEvent = line.slice(7).trim();
+        continue;
+      }
       if (line.startsWith("data: ")) {
         const data = line.slice(6);
+        if (pendingEvent === "error") {
+          onError(data);
+          return;
+        }
         if (data === "[DONE]") {
           onDone();
           return;
         }
         onChunk(data);
-      } else if (line.startsWith("event: error")) {
-        // 下一行是 data
-      } else if (line.startsWith("event: done")) {
-        // 下一行是 data: [DONE]
+        pendingEvent = "";
       }
     }
   }

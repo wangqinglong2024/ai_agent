@@ -5,12 +5,10 @@ import { useEffect } from "react";
 import { useChatStore } from "@/stores/chatStore";
 
 export function useChat() {
-  const store = useChatStore();
-
-  // 组件挂载时加载对话列表
+  const fetchConversations = useChatStore((s) => s.fetchConversations);
   useEffect(() => {
-    store.fetchConversations();
-  }, []);
+    fetchConversations();
+  }, [fetchConversations]);
 
-  return store;
+  return useChatStore();
 }
