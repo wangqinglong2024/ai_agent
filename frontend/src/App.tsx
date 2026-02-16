@@ -35,7 +35,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-[var(--bg-base)] text-[var(--text-primary)]">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--glass-border)] border-t-[var(--gradient-from)]" />
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--glass-border)] border-t-[var(--text-muted)]" />
         <p className="text-sm text-[var(--text-muted)]">正在连接服务器...</p>
         {showTimeout && (
           <div className="animate-fade-up text-center">

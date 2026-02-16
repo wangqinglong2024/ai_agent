@@ -1,12 +1,12 @@
 """
-健康检查路由
+Health Check Router
 """
 from fastapi import APIRouter
 
 router = APIRouter()
 
 
-@router.get("/health")
-async def health_check():
-    """健康检查端点，供 Docker 和 Nginx 使用"""
+@router.get("/health", response_model=dict[str, str], summary="Health check")
+async def health_check() -> dict[str, str]:
+    """Health check endpoint for Docker and Nginx probes."""
     return {"status": "ok", "service": "ideas-api"}

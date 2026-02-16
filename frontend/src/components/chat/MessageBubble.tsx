@@ -16,8 +16,8 @@ export default function MessageBubble({ role, content, isStreaming }: Props) {
       <div
         className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-4 py-3 transition-all ${
           isUser
-            ? "border border-[var(--input-border)] bg-[var(--input-bg)]"
-            : "glass-card"
+            ? "glass-bubble-user"
+            : "glass-bubble-ai"
         }`}
       >
         <div className={`mb-1.5 text-[11px] font-medium text-[var(--text-muted)]`}>

@@ -1,5 +1,8 @@
 /**
  * 对话状态管理 (Zustand)
+ * 
+ * 重要：此store的状态与当前登录用户强绑定
+ * 用户切换时必须完全重置状态，防止数据混淆
  */
 import { create } from "zustand";
 import {
@@ -40,9 +43,11 @@ interface ChatState {
   selectConversation: (id: string) => Promise<void>;
   /** 发送消息 (触发 AI 流式回复) */
   send: (content: string) => Promise<void>;
+  /** 重置所有状态（用户登出/切换时调用） */
+  reset: () => void;
 }
 
-export const useChatStore = create<ChatState>((set, get) => ({
+const initialState = {
   conversations: [],
   activeConversationId: null,
   messages: [],
@@ -51,12 +56,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
   streaming: false,
   streamingContent: "",
   sendError: null,
+};
+
+export const useChatStore = create<ChatState>((set, get) => ({
+  ...initialState,
 
   fetchConversations: async () => {
     set({ loadingConversations: true });
     try {
       const conversations = await getConversations();
       set({ conversations });
+    } catch (error) {
+      console.error("获取对话列表失败:", error);
+      set({ conversations: [] });
     } finally {
       set({ loadingConversations: false });
     }
@@ -90,14 +102,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       const messages = await getMessages(id);
       set({ messages });
+    } catch (error) {
+      console.error("获取消息失败:", error);
+      set({ messages: [] });
     } finally {
       set({ loadingMessages: false });
     }
   },
 
   send: async (content) => {
-    const { activeConversationId } = get();
+    const { activeConversationId, conversations } = get();
     if (!activeConversationId) return;
+
+    // 检查是否是第一条消息（对话列表中该对话的消息数为0）
+    const isFirstMessage = get().messages.length === 0;
 
     // 乐观更新 - 先把用户消息显示出来
     const userMsg: Message = {
@@ -127,7 +145,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }));
       },
       // onDone: 流结束
-      () => {
+      async () => {
         const { streamingContent } = get();
         const assistantMsg: Message = {
           id: crypto.randomUUID(),
@@ -143,6 +161,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
           streaming: false,
           streamingContent: "",
         }));
+
+        // 如果是第一条消息，重新获取对话列表以更新标题
+        if (isFirstMessage) {
+          try {
+            const updatedConversations = await getConversations();
+            set({ conversations: updatedConversations });
+          } catch (error) {
+            console.error("刷新对话列表失败:", error);
+          }
+        }
       },
       // onError
       (error) => {
@@ -150,5 +178,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         set({ streaming: false, streamingContent: "", sendError: error });
       }
     );
+  },
+
+  reset: () => {
+    set(initialState);
   },
 }));

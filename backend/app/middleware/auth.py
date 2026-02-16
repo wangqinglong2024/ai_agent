@@ -1,23 +1,28 @@
 """
-Supabase JWT 认证中间件
-验证前端传来的 Supabase Access Token
+Supabase JWT Verification
+
+Local stateless verification using SUPABASE_JWT_SECRET (HS256).
+No network call per request - high-performance, zero-trust.
 """
+from typing import Any
+
 import jwt
+
 from app.config import settings
 
 
-def verify_supabase_token(token: str) -> dict | None:
+def verify_supabase_token(token: str) -> dict[str, Any] | None:
     """
-    验证 Supabase JWT Token
-    
+    Verify a Supabase JWT token locally.
+
     Args:
-        token: JWT token 字符串 (不含 Bearer 前缀)
-        
+        token: JWT string (without 'Bearer ' prefix).
+
     Returns:
-        解码后的 payload dict，验证失败返回 None
+        Decoded payload dict on success, None on failure.
     """
     try:
-        payload = jwt.decode(
+        payload: dict[str, Any] = jwt.decode(
             token,
             settings.SUPABASE_JWT_SECRET,
             algorithms=["HS256"],

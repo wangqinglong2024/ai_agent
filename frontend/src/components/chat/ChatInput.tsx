@@ -22,8 +22,8 @@ export default function ChatInput() {
   };
 
   return (
-    <div className="glass border-t border-[var(--glass-border)] p-4">
-      <div className="mx-auto flex max-w-4xl items-end gap-3">
+    <div className="shrink-0 px-3 pb-3 pt-2 md:px-5 md:pb-5 md:pt-3">
+      <div className="glass-elevated mx-auto flex max-w-4xl items-end gap-3 rounded-2xl p-3">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -35,13 +35,15 @@ export default function ChatInput() {
           }
           rows={1}
           disabled={!activeConversationId || streaming}
-          className="flex-1 resize-none rounded-xl border bg-[var(--input-bg)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-colors focus:border-[var(--gradient-from)] disabled:opacity-50 border-[var(--input-border)]"
+          aria-label="消息输入框"
+          className="glass-input flex-1 resize-none rounded-xl px-4 py-3 text-sm"
         />
         <button
           type="button"
           disabled={!input.trim() || !activeConversationId || streaming}
           onClick={handleSend}
-          className="btn-primary h-10 min-w-[80px]"
+          aria-label="发送消息"
+          className="btn-primary flex h-[42px] shrink-0 items-center justify-center min-w-[80px] rounded-xl"
         >
           {streaming ? (
             <span className="flex items-center gap-1.5">

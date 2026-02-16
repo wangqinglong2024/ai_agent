@@ -17,22 +17,22 @@ export default function ChatWindow() {
 
   if (loadingMessages) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--glass-border)] border-t-[var(--gradient-from)]" />
+      <div className="flex flex-1 items-center justify-center" role="status" aria-label="正在加载消息">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--glass-border)] border-t-[var(--text-muted)]" />
       </div>
     );
   }
 
   return (
-    <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto px-4 py-6">
+    <div className="custom-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-6">
       {sendError && (
-        <div className="mx-auto max-w-4xl rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-500">
+        <div className="mx-auto max-w-4xl rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400" role="alert">
           {sendError}
         </div>
       )}
       {messages.length === 0 && !streaming && (
         <div className="flex h-full flex-col items-center justify-center gap-4 animate-fade-up">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-[var(--glass-border)] bg-[var(--input-bg)]">
+          <div className="glass-card flex h-20 w-20 items-center justify-center rounded-2xl">
             <svg
               className="h-8 w-8 text-[var(--text-muted)]"
               fill="none"
@@ -57,11 +57,11 @@ export default function ChatWindow() {
       )}
 
       {streaming && !streamingContent && (
-        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3" role="status" aria-label="AI 正在思考">
           <div className="flex gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--gradient-from)] animate-bounce [animation-delay:0ms]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--gradient-from)] animate-bounce [animation-delay:150ms]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--gradient-from)] animate-bounce [animation-delay:300ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:0ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:150ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:300ms]" />
           </div>
           <span className="text-xs text-[var(--text-muted)]">AI 正在思考...</span>
         </div>
