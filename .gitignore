@@ -33,7 +33,7 @@ build/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
-
+.github/copilot-instructions.md
 # =============================================
 # Node.js / React 前端
 # =============================================
