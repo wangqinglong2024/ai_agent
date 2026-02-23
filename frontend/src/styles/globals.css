@@ -58,6 +58,29 @@
 
   /* 下拉菜单 */
   --dropdown-bg: rgba(255, 255, 255, 0.80);
+
+  /* 灯箱 (Lightbox) — 亮色模式 */
+  --lb-overlay: rgba(240, 240, 242, 0.88);
+  --lb-overlay-blur: blur(50px);
+  --lb-inner-bg: #fff;
+  --lb-ambient-1: rgba(253, 164, 175, 0.10);
+  --lb-ambient-2: rgba(125, 211, 252, 0.08);
+  --lb-ambient-3: rgba(253, 230, 138, 0.07);
+  --lb-glow-c1: rgba(251, 113, 133, 0.45);
+  --lb-glow-c2: rgba(56, 189, 248, 0.35);
+  --lb-glow-c3: rgba(251, 191, 36, 0.30);
+  --lb-glow-blur-opacity: 0.40;
+  --lb-btn-bg: rgba(0, 0, 0, 0.05);
+  --lb-btn-border: rgba(0, 0, 0, 0.10);
+  --lb-btn-color: rgba(0, 0, 0, 0.55);
+  --lb-btn-hover-bg: rgba(0, 0, 0, 0.10);
+  --lb-btn-hover-border: rgba(0, 0, 0, 0.16);
+  --lb-btn-hover-color: rgba(0, 0, 0, 0.80);
+  --lb-counter-bg: rgba(0, 0, 0, 0.05);
+  --lb-counter-border: rgba(0, 0, 0, 0.08);
+  --lb-counter-color: rgba(0, 0, 0, 0.50);
+  --lb-spinner-track: rgba(0, 0, 0, 0.10);
+  --lb-spinner-head: rgba(0, 0, 0, 0.40);
 }
 
 .dark {
@@ -108,6 +131,29 @@
 
   /* 下拉菜单 */
   --dropdown-bg: rgba(24, 24, 27, 0.90);
+
+  /* 灯箱 (Lightbox) — 暗色模式 */
+  --lb-overlay: rgba(0, 0, 0, 0.94);
+  --lb-overlay-blur: blur(40px);
+  --lb-inner-bg: #000;
+  --lb-ambient-1: rgba(251, 113, 133, 0.06);
+  --lb-ambient-2: rgba(56, 189, 248, 0.05);
+  --lb-ambient-3: rgba(253, 230, 138, 0.04);
+  --lb-glow-c1: rgba(251, 113, 133, 0.50);
+  --lb-glow-c2: rgba(56, 189, 248, 0.40);
+  --lb-glow-c3: rgba(251, 191, 36, 0.35);
+  --lb-glow-blur-opacity: 0.55;
+  --lb-btn-bg: rgba(255, 255, 255, 0.06);
+  --lb-btn-border: rgba(255, 255, 255, 0.10);
+  --lb-btn-color: rgba(255, 255, 255, 0.75);
+  --lb-btn-hover-bg: rgba(255, 255, 255, 0.14);
+  --lb-btn-hover-border: rgba(255, 255, 255, 0.18);
+  --lb-btn-hover-color: #fff;
+  --lb-counter-bg: rgba(255, 255, 255, 0.06);
+  --lb-counter-border: rgba(255, 255, 255, 0.10);
+  --lb-counter-color: rgba(255, 255, 255, 0.65);
+  --lb-spinner-track: rgba(255, 255, 255, 0.15);
+  --lb-spinner-head: rgba(255, 255, 255, 0.60);
 }
 
 html:not(.light) {
@@ -662,9 +708,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.94);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+  background: var(--lb-overlay);
+  backdrop-filter: var(--lb-overlay-blur);
+  -webkit-backdrop-filter: var(--lb-overlay-blur);
   opacity: 1;
   transition: opacity 0.35s ease;
 }
@@ -678,9 +724,9 @@ body {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(251, 113, 133, 0.06), transparent 70%),
-    radial-gradient(ellipse 40% 50% at 30% 55%, rgba(56, 189, 248, 0.05), transparent 70%),
-    radial-gradient(ellipse 40% 40% at 70% 45%, rgba(251, 191, 36, 0.04), transparent 70%);
+    radial-gradient(ellipse 50% 40% at 50% 50%, var(--lb-ambient-1), transparent 70%),
+    radial-gradient(ellipse 40% 50% at 30% 55%, var(--lb-ambient-2), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 70% 45%, var(--lb-ambient-3), transparent 70%);
   animation: lb-ambient-pulse 8s ease-in-out infinite;
 }
 @keyframes lb-ambient-pulse {
@@ -709,13 +755,13 @@ body {
   border-radius: 14px;
   background: conic-gradient(
     from var(--glow-angle),
-    rgba(251, 113, 133, 0.5),
+    var(--lb-glow-c1),
     transparent 15%,
-    rgba(56, 189, 248, 0.4) 33%,
+    var(--lb-glow-c2) 33%,
     transparent 48%,
-    rgba(251, 191, 36, 0.35) 66%,
+    var(--lb-glow-c3) 66%,
     transparent 81%,
-    rgba(251, 113, 133, 0.5)
+    var(--lb-glow-c1)
   );
   animation: lb-glow-spin 6s linear infinite;
 }
@@ -728,7 +774,7 @@ body {
   border-radius: 18px;
   background: inherit;
   filter: blur(14px);
-  opacity: 0.55;
+  opacity: var(--lb-glow-blur-opacity);
   z-index: -1;
   animation: lb-glow-breathe 4s ease-in-out infinite;
 }
@@ -741,11 +787,11 @@ body {
   50% { opacity: 0.65; filter: blur(20px); }
 }
 
-/* 内容区：黑底容器，裁剪圆角 */
+/* 内容区：主题色底容器，裁剪圆角 */
 .lb-glow-inner {
   position: relative;
   border-radius: 12px;
-  background: #000;
+  background: var(--lb-inner-bg);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -782,8 +828,8 @@ body {
 .lb-spinner {
   width: 32px;
   height: 32px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  border-top-color: rgba(255, 255, 255, 0.6);
+  border: 2px solid var(--lb-spinner-track);
+  border-top-color: var(--lb-spinner-head);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -791,19 +837,19 @@ body {
 /* 控制按钮通用基底 */
 .lb-close,
 .lb-nav {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--lb-btn-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  color: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--lb-btn-border);
+  color: var(--lb-btn-color);
   cursor: pointer;
   transition: all 0.3s ease-out;
 }
 .lb-close:hover,
 .lb-nav:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: white;
+  background: var(--lb-btn-hover-bg);
+  border-color: var(--lb-btn-hover-border);
+  color: var(--lb-btn-hover-color);
 }
 
 .lb-close {
@@ -853,11 +899,11 @@ body {
   z-index: 3;
   padding: 5px 16px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--lb-counter-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  color: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--lb-counter-border);
+  color: var(--lb-counter-color);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 2px;
