@@ -643,94 +643,189 @@ body {
 }
 
 /* ============================================
-   Lightbox - 全屏图片查看器 (Three.js 粒子边框)
+   Lightbox — Cinematic Gallery
+   旋转光晕边框 + 呼吸环境光 + 正确自适应尺寸
    ============================================ */
-.lightbox-overlay {
+
+/* @property 驱动旋转角度动画（现代浏览器均支持） */
+@property --glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* 遮罩层 */
+.lb-overlay {
   position: fixed;
   inset: 0;
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.88);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  animation: lightbox-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  background: rgba(0, 0, 0, 0.94);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  opacity: 1;
+  transition: opacity 0.35s ease;
+}
+.lb-overlay.lb-entering {
+  opacity: 0;
 }
 
-@keyframes lightbox-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.lightbox-particles {
+/* 环境弥散光 — 极淡三色脉冲 */
+.lb-ambient {
   position: absolute;
   inset: 0;
-  z-index: 0;
   pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(251, 113, 133, 0.06), transparent 70%),
+    radial-gradient(ellipse 40% 50% at 30% 55%, rgba(56, 189, 248, 0.05), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 70% 45%, rgba(251, 191, 36, 0.04), transparent 70%);
+  animation: lb-ambient-pulse 8s ease-in-out infinite;
+}
+@keyframes lb-ambient-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
 }
 
-.lightbox-content {
+/* 舞台容器 */
+.lb-stage {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  max-width: 82vw;
-  max-height: 78vh;
+  animation: lb-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes lb-enter {
+  from { opacity: 0; transform: scale(0.96) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.lightbox-image {
-  max-width: 82vw;
-  max-height: 78vh;
-  object-fit: contain;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow:
-    0 0 40px rgba(251, 113, 133, 0.15),
-    0 0 80px rgba(56, 189, 248, 0.10),
-    0 0 120px rgba(251, 191, 36, 0.08),
-    0 20px 60px rgba(0, 0, 0, 0.6);
-  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  user-select: none;
+/* 旋转光晕边框 — 三色 conic-gradient 扫光 */
+.lb-glow-ring {
+  position: relative;
+  padding: 2px;
+  border-radius: 14px;
+  background: conic-gradient(
+    from var(--glow-angle),
+    rgba(251, 113, 133, 0.5),
+    transparent 15%,
+    rgba(56, 189, 248, 0.4) 33%,
+    transparent 48%,
+    rgba(251, 191, 36, 0.35) 66%,
+    transparent 81%,
+    rgba(251, 113, 133, 0.5)
+  );
+  animation: lb-glow-spin 6s linear infinite;
 }
 
-.lightbox-loading {
+/* 外圈弥散：同梯度模糊放大 */
+.lb-glow-ring::before {
+  content: '';
   position: absolute;
+  inset: -6px;
+  border-radius: 18px;
+  background: inherit;
+  filter: blur(14px);
+  opacity: 0.55;
+  z-index: -1;
+  animation: lb-glow-breathe 4s ease-in-out infinite;
+}
+
+@keyframes lb-glow-spin {
+  to { --glow-angle: 360deg; }
+}
+@keyframes lb-glow-breathe {
+  0%, 100% { opacity: 0.4; filter: blur(14px); }
+  50% { opacity: 0.65; filter: blur(20px); }
+}
+
+/* 内容区：黑底容器，裁剪圆角 */
+.lb-glow-inner {
+  position: relative;
+  border-radius: 12px;
+  background: #000;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* 毛玻璃控制按钮通用基底 */
-.lightbox-close,
-.lightbox-nav {
-  background: rgba(255, 255, 255, 0.07);
+/* 图片 — 正确自适应，占满视口 */
+.lb-image {
+  display: block;
+  max-width: 90vw;
+  max-height: 85vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+.lb-image.lb-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 加载指示 */
+.lb-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.lb-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-top-color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* 控制按钮通用基底 */
+.lb-close,
+.lb-nav {
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
   transition: all 0.3s ease-out;
 }
-
-.lightbox-close:hover,
-.lightbox-nav:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.08);
+.lb-close:hover,
+.lb-nav:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.18);
   color: white;
 }
 
-.lightbox-close {
+.lb-close {
   position: absolute;
   top: 20px;
   right: 20px;
-  z-index: 2;
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.lb-close:hover {
+  transform: scale(1.08) rotate(90deg);
+}
+
+.lb-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
   width: 44px;
   height: 44px;
   display: flex;
@@ -738,53 +833,169 @@ body {
   justify-content: center;
   border-radius: 50%;
 }
-
-.lightbox-close:hover {
-  transform: scale(1.08) rotate(90deg);
-}
-
-.lightbox-nav {
-  position: absolute;
-  top: 50%;
-  z-index: 2;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-}
-
-.lightbox-nav:hover {
+.lb-nav:hover {
   transform: translateY(-50%) scale(1.1);
 }
-
-.lightbox-nav-prev {
-  left: 20px;
+.lb-nav-prev {
+  left: 16px;
+  transform: translateY(-50%);
+}
+.lb-nav-next {
+  right: 16px;
   transform: translateY(-50%);
 }
 
-.lightbox-nav-next {
-  right: 20px;
-  transform: translateY(-50%);
-}
-
-.lightbox-counter {
+.lb-counter {
   position: absolute;
-  bottom: 24px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 2;
-  padding: 6px 18px;
+  z-index: 3;
+  padding: 5px 16px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
+}
+
+/* ============================================
+   Workflow Steps - 可折叠工作流进度面板
+   ============================================ */
+.wf-steps-root {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.wf-steps-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease-out;
+}
+
+.wf-steps-toggle:hover {
+  background: var(--bg-glass-hover);
+  color: var(--text-secondary);
+}
+
+.wf-steps-icon {
+  flex-shrink: 0;
+}
+
+.wf-steps-icon.wf-done {
+  color: #10b981;
+}
+
+.wf-steps-spinner {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border: 2px solid var(--glass-border);
+  border-top-color: var(--text-muted);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.wf-steps-summary {
+  flex: 1;
+  text-align: left;
+}
+
+.wf-steps-chevron {
+  flex-shrink: 0;
+  transition: transform 0.25s ease-out;
+}
+
+.wf-steps-chevron.wf-expanded {
+  transform: rotate(180deg);
+}
+
+.wf-steps-content {
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s ease;
+}
+
+.wf-steps-list {
+  padding: 8px 0 4px 6px;
+}
+
+.wf-step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  animation: wf-step-in 0.3s ease-out forwards;
+}
+
+@keyframes wf-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.wf-step-check {
+  flex-shrink: 0;
+  color: #10b981;
+}
+
+.wf-step-spinner-sm {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--glass-border);
+  border-top-color: var(--text-muted);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.wf-step-title {
+  transition: color 0.2s;
+}
+
+.wf-step-title.wf-active {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   Images Loading Spinner - 图片生成中指示器
+   ============================================ */
+.images-loading-spinner {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 2px solid var(--glass-border);
+  border-top-color: var(--text-muted);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 /* ============================================

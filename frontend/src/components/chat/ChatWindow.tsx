@@ -7,6 +7,8 @@ export default function ChatWindow() {
   const streaming = useChatStore((s) => s.streaming);
   const streamingContent = useChatStore((s) => s.streamingContent);
   const streamingImages = useChatStore((s) => s.streamingImages);
+  const streamingSteps = useChatStore((s) => s.streamingSteps);
+  const imagesLoading = useChatStore((s) => s.imagesLoading);
   const loadingMessages = useChatStore((s) => s.loadingMessages);
   const sendError = useChatStore((s) => s.sendError);
 
@@ -14,7 +16,7 @@ export default function ChatWindow() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingContent]);
+  }, [messages, streamingContent, streamingSteps, streamingImages]);
 
   if (loadingMessages) {
     return (
@@ -55,27 +57,21 @@ export default function ChatWindow() {
           role={msg.role}
           content={msg.content}
           images={(msg.metadata?.images as string[]) || []}
+          steps={(msg.metadata?.steps as Array<{ title: string; status: "running" | "done" }>) || []}
+          stepsDefaultCollapsed
         />
       ))}
 
-      {streaming && streamingContent && (
+      {/* 流式 AI 回复 — 实时进度 + 增量文本 + 图片 */}
+      {streaming && (
         <MessageBubble
           role="assistant"
           content={streamingContent}
           images={streamingImages}
+          steps={streamingSteps}
+          imagesLoading={imagesLoading}
           isStreaming
         />
-      )}
-
-      {streaming && !streamingContent && (
-        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3" role="status" aria-label="AI 正在思考">
-          <div className="flex gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:0ms]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:150ms]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:300ms]" />
-          </div>
-          <span className="text-xs text-[var(--text-muted)]">AI 正在生成...</span>
-        </div>
       )}
 
       <div ref={bottomRef} />

@@ -1,10 +1,10 @@
 """
-Dify API 集成服务
-专为 ContentOps 设计：自适应 Workflow / Chatflow 两种 App 类型
-接收用户输入 → 返回营销文案 + 图片链接
+Dify API 集成服务 — 流式输出版
+自适应 Workflow / Chatflow，实时推送工作流节点进度 + 增量文本 + 图片结果
 """
 import json
 import re
+from typing import AsyncGenerator
 
 import httpx
 
@@ -12,9 +12,9 @@ from app.config import settings
 
 
 class DifyService:
-    """Dify ContentOps 调用服务（自适应 Workflow / Chatflow）"""
+    """Dify ContentOps 调用服务 — 全链路流式推送"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = settings.DIFY_API_URL
         self.api_key = settings.DIFY_API_KEY
         self.headers = {
@@ -22,148 +22,325 @@ class DifyService:
             "Content-Type": "application/json",
         }
 
-    async def call_contentops(self, query: str, user_id: str) -> dict:
+    # ==================================================================
+    # 对外唯一入口 — 异步生成器，逐事件 yield
+    # ==================================================================
+    async def stream_contentops(
+        self, query: str, user_id: str,
+    ) -> AsyncGenerator[dict, None]:
         """
-        调用 ContentOps：先尝试 Chat API，若 App 类型不匹配则自动尝试 Workflow API
-        （Chat API 更常见且与 Chatflow 兼容，优先尝试可减少延迟）
+        流式调用 ContentOps。先尝试 Chat API，不匹配时自动回退 Workflow API。
 
-        Args:
-            query: 用户输入内容
-            user_id: 用户唯一标识
-
-        Returns:
-            {"text": str, "images": list[str]}
+        Yields 事件字典（type 字段标识类型）:
+          step       — {"title": str, "status": "running"|"done"}
+          delta      — {"text": str}                  增量文本
+          text_done  — {"text": str}                  全量文本
+          images     — {"status": "generating"|"done", "urls": [...]}
+          error      — {"message": str}
+          done       — {}
         """
-        result = await self._try_chat(query, user_id)
-        if result is not None:
-            return result
+        async for event in self._try_chat_stream(query, user_id):
+            if event.get("type") == "_fallback_needed":
+                async for wf_event in self._try_workflow_stream(query, user_id):
+                    yield wf_event
+                return
+            yield event
 
-        return await self._try_workflow_fallback(query, user_id)
-
-    # ------------------------------------------------------------------
-    # Workflow API
-    # ------------------------------------------------------------------
-    async def _try_workflow_fallback(self, query: str, user_id: str) -> dict:
-        """回退：尝试 Workflow 端点"""
-        payload = {
-            "inputs": {"query": query},
-            "response_mode": "blocking",
-            "user": user_id,
-        }
-
-        try:
-            async with httpx.AsyncClient(timeout=120.0) as client:
-                resp = await client.post(
-                    f"{self.base_url}/workflows/run",
-                    json=payload,
-                    headers=self.headers,
-                )
-
-                if resp.status_code == 200:
-                    return self._parse_workflow_output(resp.json())
-
-                body = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
-                return {
-                    "text": f"Workflow 调用失败 (HTTP {resp.status_code}): {body.get('message', resp.text[:200])}",
-                    "images": [],
-                }
-
-        except httpx.ConnectError:
-            return {"text": "无法连接到 Dify 服务，请检查 DIFY_API_URL 配置", "images": []}
-        except Exception as e:
-            return {"text": f"Workflow 调用异常: {str(e)}", "images": []}
-
-    def _parse_workflow_output(self, result: dict) -> dict:
-        """解析 Dify Workflow 端点的结构化输出"""
-        outputs = result.get("data", {}).get("outputs", {})
-        if not outputs:
-            return {"text": "工作流返回为空", "images": []}
-
-        text = self._extract_text(outputs)
-        images = self._extract_images(outputs, text)
-        return {"text": text, "images": images}
-
-    # ------------------------------------------------------------------
-    # Chat API (Chatflow 兼容)
-    # ------------------------------------------------------------------
-    async def _try_chat(self, query: str, user_id: str) -> dict | None:
-        """通过 Chat API (blocking) 调用 Chatflow 类型的 ContentOps"""
+    # ==================================================================
+    # Chat API — 流式
+    # ==================================================================
+    async def _try_chat_stream(
+        self, query: str, user_id: str,
+    ) -> AsyncGenerator[dict, None]:
         payload = {
             "inputs": {},
             "query": query,
-            "response_mode": "blocking",
+            "response_mode": "streaming",
             "user": user_id,
         }
 
+        full_text = ""
+        images: list[str] = []
+        has_text = False
+        sent_generating = False
+
         try:
-            async with httpx.AsyncClient(timeout=120.0) as client:
-                resp = await client.post(
+            async with httpx.AsyncClient(timeout=300.0) as client:
+                async with client.stream(
+                    "POST",
                     f"{self.base_url}/chat-messages",
                     json=payload,
                     headers=self.headers,
-                )
+                ) as resp:
+                    if resp.status_code != 200:
+                        error_body = await resp.aread()
+                        try:
+                            body = json.loads(error_body)
+                            code = body.get("code", "")
+                            if code in ("not_chat_app", "not_completion_app"):
+                                yield {"type": "_fallback_needed"}
+                                return
+                            yield {
+                                "type": "error",
+                                "message": f"Chat API (HTTP {resp.status_code}): "
+                                           f"{body.get('message', '')}",
+                            }
+                        except Exception:
+                            yield {
+                                "type": "error",
+                                "message": f"Chat API (HTTP {resp.status_code})",
+                            }
+                        yield {"type": "done"}
+                        return
 
-                if resp.status_code == 200:
-                    return self._parse_chat_output(resp.json())
+                    event_name = ""
+                    async for line in resp.aiter_lines():
+                        line = line.strip()
+                        if not line:
+                            continue
+                        if line.startswith("event:"):
+                            event_name = line[6:].strip()
+                            continue
+                        if not line.startswith("data:"):
+                            continue
 
-                body = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
-                code = body.get("code", "")
-                if code in ("not_chat_app", "not_completion_app"):
-                    return None
+                        data_str = line[5:].strip()
+                        if not data_str:
+                            continue
+                        try:
+                            data = json.loads(data_str)
+                        except json.JSONDecodeError:
+                            continue
 
-                return {
-                    "text": f"Chat API 调用失败 (HTTP {resp.status_code}): {body.get('message', resp.text[:200])}",
-                    "images": [],
-                }
+                        ev = data.get("event", event_name)
+
+                        if ev == "workflow_started":
+                            yield {"type": "step", "title": "工作流启动", "status": "running"}
+
+                        elif ev == "node_started":
+                            nd = data.get("data", data)
+                            title = nd.get("title", "处理中")
+                            yield {"type": "step", "title": title, "status": "running"}
+                            if has_text and not images and not sent_generating:
+                                sent_generating = True
+                                yield {"type": "images", "status": "generating", "urls": []}
+
+                        elif ev == "node_finished":
+                            nd = data.get("data", data)
+                            title = nd.get("title", "处理中")
+                            yield {"type": "step", "title": title, "status": "done"}
+                            outputs = nd.get("outputs") or {}
+                            if isinstance(outputs, dict):
+                                ni = self._extract_images(outputs, "")
+                                if ni:
+                                    images = list(dict.fromkeys(images + ni))
+                                    yield {"type": "images", "status": "done", "urls": images}
+
+                        elif ev == "message":
+                            chunk = data.get("answer", "")
+                            if chunk:
+                                has_text = True
+                                full_text += chunk
+                                yield {"type": "delta", "text": chunk}
+
+                        elif ev == "message_file":
+                            url = data.get("url", "")
+                            if url and url not in images:
+                                images.append(url)
+                                yield {"type": "images", "status": "done", "urls": images}
+
+                        elif ev == "message_end":
+                            meta = data.get("metadata", {})
+                            for res in meta.get("retriever_resources", []):
+                                src = res.get("source", "")
+                                if src.startswith("http") and src not in images:
+                                    images.append(src)
+                            ti = self._extract_images_from_text(full_text)
+                            for u in ti:
+                                if u not in images:
+                                    images.append(u)
+                            if full_text:
+                                yield {"type": "text_done", "text": full_text}
+                            if images:
+                                yield {"type": "images", "status": "done", "urls": images}
+
+                        elif ev == "workflow_finished":
+                            wfd = data.get("data", data)
+                            outputs = wfd.get("outputs") or {}
+                            if isinstance(outputs, dict):
+                                if not full_text:
+                                    t = self._extract_text(outputs)
+                                    if t and t != "工作流未返回文本结果":
+                                        full_text = t
+                                        yield {"type": "text_done", "text": full_text}
+                                wi = self._extract_images(outputs, full_text)
+                                for u in wi:
+                                    if u not in images:
+                                        images.append(u)
+                                if images:
+                                    yield {"type": "images", "status": "done", "urls": images}
 
         except httpx.ConnectError:
-            return {"text": "无法连接到 Dify 服务，请检查 DIFY_API_URL 配置", "images": []}
+            yield {"type": "error", "message": "无法连接到 Dify 服务，请检查配置"}
+        except httpx.ReadTimeout:
+            yield {"type": "error", "message": "Dify 服务响应超时，请稍后重试"}
         except Exception as e:
-            return {"text": f"Chat API 调用异常: {str(e)}", "images": []}
+            yield {"type": "error", "message": f"调用异常: {e!s}"}
 
-    def _parse_chat_output(self, result: dict) -> dict:
-        """解析 Chat API 的响应，提取文案和图片"""
-        answer = result.get("answer", "")
+        yield {"type": "done"}
 
-        metadata = result.get("metadata", {})
-        retriever_resources = metadata.get("retriever_resources", [])
+    # ==================================================================
+    # Workflow API — 流式
+    # ==================================================================
+    async def _try_workflow_stream(
+        self, query: str, user_id: str,
+    ) -> AsyncGenerator[dict, None]:
+        payload = {
+            "inputs": {"query": query},
+            "response_mode": "streaming",
+            "user": user_id,
+        }
 
-        images = self._extract_images_from_text(answer)
+        full_text = ""
+        images: list[str] = []
+        has_text = False
+        sent_generating = False
 
-        file_urls = []
-        for res in retriever_resources:
-            src = res.get("source", "")
-            if src and src.startswith("http"):
-                file_urls.append(src)
+        try:
+            async with httpx.AsyncClient(timeout=300.0) as client:
+                async with client.stream(
+                    "POST",
+                    f"{self.base_url}/workflows/run",
+                    json=payload,
+                    headers=self.headers,
+                ) as resp:
+                    if resp.status_code != 200:
+                        error_body = await resp.aread()
+                        try:
+                            body = json.loads(error_body)
+                            yield {
+                                "type": "error",
+                                "message": f"Workflow (HTTP {resp.status_code}): "
+                                           f"{body.get('message', '')}",
+                            }
+                        except Exception:
+                            yield {
+                                "type": "error",
+                                "message": f"Workflow (HTTP {resp.status_code})",
+                            }
+                        yield {"type": "done"}
+                        return
 
-        all_images = list(dict.fromkeys(images + file_urls))
+                    event_name = ""
+                    async for line in resp.aiter_lines():
+                        line = line.strip()
+                        if not line:
+                            continue
+                        if line.startswith("event:"):
+                            event_name = line[6:].strip()
+                            continue
+                        if not line.startswith("data:"):
+                            continue
 
-        return {"text": answer, "images": all_images}
+                        data_str = line[5:].strip()
+                        if not data_str:
+                            continue
+                        try:
+                            data = json.loads(data_str)
+                        except json.JSONDecodeError:
+                            continue
 
-    # ------------------------------------------------------------------
-    # 通用提取器
-    # ------------------------------------------------------------------
+                        ev = data.get("event", event_name)
+
+                        if ev == "workflow_started":
+                            yield {"type": "step", "title": "工作流启动", "status": "running"}
+
+                        elif ev == "node_started":
+                            nd = data.get("data", data)
+                            title = nd.get("title", "处理中")
+                            yield {"type": "step", "title": title, "status": "running"}
+                            if has_text and not images and not sent_generating:
+                                sent_generating = True
+                                yield {"type": "images", "status": "generating", "urls": []}
+
+                        elif ev == "node_finished":
+                            nd = data.get("data", data)
+                            title = nd.get("title", "处理中")
+                            yield {"type": "step", "title": title, "status": "done"}
+                            outputs = nd.get("outputs") or {}
+                            if isinstance(outputs, dict):
+                                ni = self._extract_images(outputs, "")
+                                if ni:
+                                    images = list(dict.fromkeys(images + ni))
+                                    yield {"type": "images", "status": "done", "urls": images}
+
+                        elif ev == "text_chunk":
+                            inner = data.get("data", data)
+                            chunk = inner.get("text", "")
+                            if chunk:
+                                has_text = True
+                                full_text += chunk
+                                yield {"type": "delta", "text": chunk}
+
+                        elif ev == "workflow_finished":
+                            wfd = data.get("data", data)
+                            outputs = wfd.get("outputs") or {}
+                            if isinstance(outputs, dict):
+                                if not full_text:
+                                    t = self._extract_text(outputs)
+                                    if t and t != "工作流未返回文本结果":
+                                        full_text = t
+                                elif full_text:
+                                    pass
+                                wi = self._extract_images(outputs, full_text)
+                                for u in wi:
+                                    if u not in images:
+                                        images.append(u)
+
+                            ti = self._extract_images_from_text(full_text)
+                            for u in ti:
+                                if u not in images:
+                                    images.append(u)
+
+                            if full_text:
+                                yield {"type": "text_done", "text": full_text}
+                            if images:
+                                yield {"type": "images", "status": "done", "urls": images}
+
+        except httpx.ConnectError:
+            yield {"type": "error", "message": "无法连接到 Dify 服务"}
+        except httpx.ReadTimeout:
+            yield {"type": "error", "message": "Dify 服务响应超时"}
+        except Exception as e:
+            yield {"type": "error", "message": f"Workflow 调用异常: {e!s}"}
+
+        yield {"type": "done"}
+
+    # ==================================================================
+    # 通用提取器（复用原有逻辑）
+    # ==================================================================
     def _extract_text(self, outputs: dict) -> str:
-        """从输出字典中按优先级提取文本"""
-        for key in ("text", "output", "result", "content", "answer", "response", "copy", "copywriting"):
+        for key in (
+            "text", "output", "result", "content",
+            "answer", "response", "copy", "copywriting",
+        ):
             if key in outputs and isinstance(outputs[key], str) and outputs[key].strip():
                 return outputs[key].strip()
-
         all_texts = [v.strip() for v in outputs.values() if isinstance(v, str) and v.strip()]
         return "\n\n".join(all_texts) if all_texts else "工作流未返回文本结果"
 
     def _extract_images(self, outputs: dict, text: str) -> list[str]:
-        """从输出字典 + 文本中提取图片链接"""
-        for key in ("images", "image_urls", "image_url", "urls", "files", "pictures", "photos", "image"):
+        for key in (
+            "images", "image_urls", "image_url", "urls",
+            "files", "pictures", "photos", "image",
+        ):
             if key in outputs and outputs[key]:
                 urls = self._parse_image_urls(outputs[key])
                 if urls:
                     return urls
-
         return self._extract_images_from_text(text)
 
     def _extract_images_from_text(self, text: str) -> list[str]:
-        """从文本中用正则提取图片链接"""
         if not text:
             return []
         md_urls = re.findall(r'!\[.*?\]\((https?://\S+?)\)', text)
@@ -174,15 +351,12 @@ class DifyService:
         return list(dict.fromkeys(md_urls + direct_urls))
 
     def _parse_image_urls(self, value: object) -> list[str]:
-        """解析多种格式的图片 URL 列表"""
         if isinstance(value, list):
             return [str(v).strip() for v in value if v and str(v).strip().startswith("http")]
-
         if isinstance(value, str):
             value = value.strip()
             if not value:
                 return []
-
             if value.startswith("["):
                 try:
                     parsed = json.loads(value)
@@ -190,15 +364,12 @@ class DifyService:
                         return [str(v).strip() for v in parsed if v and str(v).strip().startswith("http")]
                 except json.JSONDecodeError:
                     pass
-
             for sep in ("\n", ",", ";", "|"):
                 if sep in value:
                     urls = [u.strip() for u in value.split(sep) if u.strip()]
                     valid = [u for u in urls if u.startswith("http")]
                     if valid:
                         return valid
-
             if value.startswith("http"):
                 return [value]
-
         return []

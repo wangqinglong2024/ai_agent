@@ -1,26 +1,33 @@
 import { useState, useRef, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import ImageLightbox from "./ImageLightbox";
+import WorkflowSteps, { type StepItem } from "./WorkflowSteps";
 
 interface Props {
   role: string;
   content: string;
   images?: string[];
+  steps?: StepItem[];
+  stepsDefaultCollapsed?: boolean;
+  imagesLoading?: boolean;
   isStreaming?: boolean;
 }
 
 /**
- * 从文本中移除图片链接，避免画廊与正文重复展示
- * 覆盖 Markdown 图片语法 + 裸 URL 两种情况
+ * 从 AI 回复文本中彻底清除所有链接
+ * 图片已在画廊中独立展示，文案中不需要任何 URL
  */
-function stripImageUrls(text: string): string {
+function stripImageUrls(text: string, _imageUrls: string[] = []): string {
   let s = text;
-  s = s.replace(/!\[.*?\]\(https?:\/\/\S+?\)/g, "");
-  s = s.replace(
-    /^\s*https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|svg|bmp)(?:\?\S*)?\s*$/gim,
-    "",
-  );
+  s = s.replace(/!\[.*?\]\((https?:\/\/\S+?)\)/g, "");
+  s = s.replace(/https?:\/\/\S+/gi, "");
+  s = s.replace(/^\s*[-*•]\s*$/gm, "");
+  s = s.replace(/^\s*\d+[.)]\s*$/gm, "");
+  s = s.replace(/\s*[-–—]+\s*$/gm, "");
+  s = s.replace(/\(\s*\)/g, "");
+  s = s.replace(/\[\s*\]/g, "");
   s = s.replace(/\n{3,}/g, "\n\n");
+  s = s.replace(/[ \t]+$/gm, "");
   return s.trim();
 }
 
@@ -28,6 +35,9 @@ export default function MessageBubble({
   role,
   content,
   images = [],
+  steps = [],
+  stepsDefaultCollapsed = false,
+  imagesLoading = false,
   isStreaming,
 }: Props) {
   const isUser = role === "user";
@@ -35,8 +45,8 @@ export default function MessageBubble({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const displayText = useMemo(
-    () => (isUser ? content : stripImageUrls(content)),
-    [isUser, content],
+    () => (isUser ? content : stripImageUrls(content, images)),
+    [isUser, content, images],
   );
 
   const showScrollGallery = images.length > 3;
@@ -61,7 +71,12 @@ export default function MessageBubble({
             {isUser ? "你" : "AI"}
           </div>
 
-          {/* 文本内容 — AI 侧使用增强 prose 排版 */}
+          {/* 工作流步骤面板 */}
+          {!isUser && steps.length > 0 && (
+            <WorkflowSteps steps={steps} defaultCollapsed={stepsDefaultCollapsed} />
+          )}
+
+          {/* 文本内容 */}
           {displayText && (
             <div
               className={
@@ -78,11 +93,30 @@ export default function MessageBubble({
             </div>
           )}
 
-          {/* 图片画廊 — ≤3 网格展示，>3 横向滑动 */}
+          {/* 流式等待提示：尚无文本时 */}
+          {isStreaming && !displayText && steps.length === 0 && (
+            <div className="flex items-center gap-2 py-1" role="status">
+              <div className="flex gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:0ms]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:150ms]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:300ms]" />
+              </div>
+              <span className="text-xs text-[var(--text-muted)]">AI 正在思考...</span>
+            </div>
+          )}
+
+          {/* 图片生成中占位 */}
+          {imagesLoading && images.length === 0 && (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-[var(--glass-border)] bg-[var(--bg-glass)] px-4 py-3">
+              <div className="images-loading-spinner" />
+              <span className="text-xs text-[var(--text-muted)]">图片生成中，请稍候...</span>
+            </div>
+          )}
+
+          {/* 图片画廊 */}
           {images.length > 0 && (
             showScrollGallery ? (
               <div className="relative mt-4">
-                {/* 左右滚动按钮 */}
                 <button
                   type="button"
                   onClick={() => scrollBy(-1)}
@@ -154,7 +188,7 @@ export default function MessageBubble({
             )
           )}
 
-          {isStreaming && <span className="typing-cursor" />}
+          {isStreaming && displayText && <span className="typing-cursor" />}
         </div>
       </div>
 

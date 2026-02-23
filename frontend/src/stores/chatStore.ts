@@ -1,13 +1,13 @@
 /**
  * 对话状态管理 (Zustand)
  *
- * 重要：此store的状态与当前登录用户强绑定
- * 用户切换时必须完全重置状态，防止数据混淆
+ * 支持流式工作流进度追踪：步骤/增量文本/图片分阶段推送
  */
 import { create } from "zustand";
 import {
   Conversation,
   Message,
+  WorkflowStep,
   getConversations,
   createConversation,
   deleteConversation,
@@ -23,8 +23,9 @@ interface ChatState {
   loadingMessages: boolean;
   streaming: boolean;
   streamingContent: string;
-  /** ContentOps 工作流返回的图片链接（流式期间暂存） */
   streamingImages: string[];
+  streamingSteps: WorkflowStep[];
+  imagesLoading: boolean;
   sendError: string | null;
 
   fetchConversations: () => Promise<void>;
@@ -44,6 +45,8 @@ const initialState = {
   streaming: false,
   streamingContent: "",
   streamingImages: [] as string[],
+  streamingSteps: [] as WorkflowStep[],
+  imagesLoading: false,
   sendError: null,
 };
 
@@ -78,9 +81,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((state) => ({
       conversations: state.conversations.filter((c) => c.id !== id),
       activeConversationId:
-        state.activeConversationId === id
-          ? null
-          : state.activeConversationId,
+        state.activeConversationId === id ? null : state.activeConversationId,
       messages:
         state.activeConversationId === id ? [] : state.messages,
     }));
@@ -120,22 +121,51 @@ export const useChatStore = create<ChatState>((set, get) => ({
       streaming: true,
       streamingContent: "",
       streamingImages: [],
+      streamingSteps: [],
+      imagesLoading: false,
       sendError: null,
     }));
 
-    await sendMessage(
-      activeConversationId,
-      content,
-      (text) => {
+    await sendMessage(activeConversationId, content, {
+      onStep: (step) => {
+        set((state) => {
+          const steps = [...state.streamingSteps];
+          const idx = steps.findIndex((s) => s.title === step.title);
+          if (idx >= 0) {
+            steps[idx] = { ...steps[idx], status: step.status };
+          } else {
+            steps.push(step);
+          }
+          return { streamingSteps: steps };
+        });
+      },
+
+      onDelta: (text) => {
         set((state) => ({
           streamingContent: state.streamingContent + text,
         }));
       },
-      async () => {
-        const { streamingContent, streamingImages } = get();
+
+      onTextDone: (text) => {
+        set({ streamingContent: text });
+      },
+
+      onImages: (data) => {
+        if (data.status === "generating") {
+          set({ imagesLoading: true });
+        } else if (data.status === "done" && data.urls.length > 0) {
+          set({ streamingImages: data.urls, imagesLoading: false });
+        }
+      },
+
+      onDone: async () => {
+        const { streamingContent, streamingImages, streamingSteps } = get();
         const metadata: Record<string, unknown> = {};
         if (streamingImages.length > 0) {
           metadata.images = streamingImages;
+        }
+        if (streamingSteps.length > 0) {
+          metadata.steps = streamingSteps;
         }
 
         const assistantMsg: Message = {
@@ -153,6 +183,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
           streaming: false,
           streamingContent: "",
           streamingImages: [],
+          streamingSteps: [],
+          imagesLoading: false,
         }));
 
         if (isFirstMessage) {
@@ -164,19 +196,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
           }
         }
       },
-      (error) => {
+
+      onError: (error) => {
         console.error("消息发送失败:", error);
         set({
           streaming: false,
           streamingContent: "",
           streamingImages: [],
+          streamingSteps: [],
+          imagesLoading: false,
           sendError: error,
         });
       },
-      (urls) => {
-        set({ streamingImages: urls });
-      },
-    );
+    });
   },
 
   reset: () => {

@@ -6,9 +6,6 @@ import { supabase } from "./supabase";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 
-/**
- * 获取当前用户的 access_token
- */
 async function getAccessToken(): Promise<string> {
   const {
     data: { session },
@@ -16,9 +13,6 @@ async function getAccessToken(): Promise<string> {
   return session?.access_token || "";
 }
 
-/**
- * 通用 fetch 封装
- */
 async function request<T = unknown>(
   path: string,
   options: RequestInit = {}
@@ -66,12 +60,10 @@ export interface Message {
   created_at: string;
 }
 
-/** 获取对话列表 */
 export function getConversations(): Promise<Conversation[]> {
   return request("/chat/conversations");
 }
 
-/** 创建新对话 */
 export function createConversation(title = "新对话"): Promise<Conversation> {
   return request("/chat/conversations", {
     method: "POST",
@@ -79,31 +71,47 @@ export function createConversation(title = "新对话"): Promise<Conversation> {
   });
 }
 
-/** 删除对话 */
 export function deleteConversation(id: string): Promise<void> {
   return request(`/chat/conversations/${id}`, { method: "DELETE" });
 }
 
-/** 获取对话消息列表 */
 export function getMessages(conversationId: string): Promise<Message[]> {
   return request(`/chat/conversations/${conversationId}/messages`);
 }
 
+// ============================================================================
+// 流式消息 — 支持工作流步骤进度 + 增量文本 + 图片
+// ============================================================================
+
+export interface WorkflowStep {
+  title: string;
+  status: "running" | "done";
+}
+
+export interface StreamCallbacks {
+  onStep?: (step: WorkflowStep) => void;
+  onDelta?: (text: string) => void;
+  onTextDone?: (text: string) => void;
+  onImages?: (data: { status: string; urls: string[] }) => void;
+  onDone?: () => void;
+  onError?: (error: string) => void;
+}
+
 /**
- * 发送消息（SSE 接收 ContentOps 工作流结果）
+ * 发送消息并通过 SSE 接收流式事件
  *
  * SSE 事件协议：
- *   event: result → data: {"text": "...", "images": [...]}
- *   event: error  → data: 错误信息
- *   event: done   → data: [DONE]
+ *   step       — 工作流节点进度
+ *   delta      — 增量文本
+ *   text_done  — 全量文本（最终校正）
+ *   images     — 图片状态 (generating / done + urls)
+ *   error      — 错误信息
+ *   done       — 流结束
  */
 export async function sendMessage(
   conversationId: string,
   content: string,
-  onChunk: (text: string) => void,
-  onDone: () => void,
-  onError: (error: string) => void,
-  onImages?: (urls: string[]) => void,
+  callbacks: StreamCallbacks,
 ): Promise<void> {
   const token = await getAccessToken();
 
@@ -121,63 +129,89 @@ export async function sendMessage(
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({ detail: "请求失败" }));
-    onError(err.detail || `HTTP ${response.status}`);
+    callbacks.onError?.(err.detail || `HTTP ${response.status}`);
     return;
   }
 
   const reader = response.body?.getReader();
   if (!reader) {
-    onError("无法读取响应流");
+    callbacks.onError?.("无法读取响应流");
     return;
   }
 
   const decoder = new TextDecoder();
   let pendingEvent = "";
+  let buffer = "";
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
 
-    const text = decoder.decode(value, { stream: true });
-    const lines = text.split("\n");
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
 
     for (const line of lines) {
-      if (line.startsWith("event: ")) {
-        pendingEvent = line.slice(7).trim();
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      if (trimmed.startsWith("event: ")) {
+        pendingEvent = trimmed.slice(7).trim();
         continue;
       }
-      if (line.startsWith("data: ")) {
-        const data = line.slice(6);
 
-        if (pendingEvent === "error") {
-          onError(data);
+      if (trimmed.startsWith("data: ")) {
+        const raw = trimmed.slice(6);
+
+        if (raw === "[DONE]") {
+          callbacks.onDone?.();
           return;
         }
 
-        if (pendingEvent === "result") {
-          try {
-            const result = JSON.parse(data);
-            if (result.text) onChunk(result.text);
-            if (Array.isArray(result.images) && result.images.length > 0) {
-              onImages?.(result.images);
-            }
-          } catch {
-            onChunk(data);
+        try {
+          const data = JSON.parse(raw);
+
+          switch (pendingEvent) {
+            case "step":
+              callbacks.onStep?.({
+                title: data.title || "",
+                status: data.status || "running",
+              });
+              break;
+
+            case "delta":
+              callbacks.onDelta?.(data.text || "");
+              break;
+
+            case "text_done":
+              callbacks.onTextDone?.(data.text || "");
+              break;
+
+            case "images":
+              callbacks.onImages?.({
+                status: data.status || "",
+                urls: data.urls || [],
+              });
+              break;
+
+            case "error":
+              callbacks.onError?.(data.message || "未知错误");
+              return;
+
+            default:
+              break;
           }
-          pendingEvent = "";
-          continue;
+        } catch {
+          if (pendingEvent === "error") {
+            callbacks.onError?.(raw);
+            return;
+          }
         }
 
-        if (data === "[DONE]") {
-          onDone();
-          return;
-        }
-
-        onChunk(data);
         pendingEvent = "";
       }
     }
   }
 
-  onDone();
+  callbacks.onDone?.();
 }

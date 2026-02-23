@@ -1,12 +1,15 @@
 """
 对话管理路由
 职责：创建对话、发送消息、获取历史记录
-消息发送后调用 Dify ContentOps 工作流，获取营销文案 + 图片链接
+消息发送后通过 Dify 流式 API 实时推送工作流进度
 
-SSE 事件协议：
-  event: result  → data: {"text": "...", "images": [...]}
-  event: done    → data: [DONE]
-  event: error   → data: 错误信息
+SSE 事件协议（前端新版）：
+  event: step       → data: {"title":"...", "status":"running"|"done"}
+  event: delta      → data: {"text":"增量文本"}
+  event: text_done  → data: {"text":"全量文本"}
+  event: images     → data: {"status":"generating"|"done", "urls":[...]}
+  event: error      → data: {"message":"错误信息"}
+  event: done       → data: [DONE]
 """
 import json
 from typing import Any
@@ -130,14 +133,15 @@ async def get_messages(
 
 
 def _generate_title_from_query(query: str) -> str:
-    """
-    根据用户的第一条消息生成对话标题
-    策略：提取前30个字符作为标题，去除换行符
-    """
     clean_query = query.replace("\n", " ").replace("\r", " ").strip()
     if len(clean_query) <= 30:
         return clean_query
     return clean_query[:30] + "..."
+
+
+def _sse(event: str, data: str) -> str:
+    """构造单条 SSE 帧"""
+    return f"event: {event}\ndata: {data}\n\n"
 
 
 @router.post("/conversations/{conversation_id}/messages")
@@ -147,14 +151,13 @@ async def send_message(
     user: dict[str, Any] = Depends(get_current_user),
 ) -> StreamingResponse:
     """
-    发送消息并调用 ContentOps 工作流获取营销文案 + 图片 (SSE)
+    发送消息并流式返回 Dify 工作流进度 + 营销文案 + 图片 (SSE)
 
     流程:
-    1. 保存用户消息到 Supabase
-    2. 如果是第一条消息，自动生成对话标题
-    3. 调用 Dify ContentOps 工作流 (blocking)
-    4. 将结果以 SSE 格式返回前端 (result 事件包含 text + images)
-    5. 保存 AI 回复到 Supabase (content + metadata.images)
+    1. 保存用户消息
+    2. 自动生成对话标题 (首条消息)
+    3. 流式消费 Dify 事件并即时转发给前端
+    4. 完成后持久化 AI 回复 (text + images + steps)
     """
     supabase = get_supabase_admin()
     user_id: str = user["sub"]
@@ -195,38 +198,89 @@ async def send_message(
     dify = DifyService()
 
     async def event_generator():
+        full_text = ""
+        all_images: list[str] = []
+        steps: list[dict[str, str]] = []
+
         try:
-            result = await dify.call_contentops(
-                query=body.content,
-                user_id=user_id,
-            )
+            async for event in dify.stream_contentops(
+                query=body.content, user_id=user_id,
+            ):
+                etype = event.get("type", "")
 
-            text: str = result.get("text", "")
-            images: list[str] = result.get("images", [])
+                if etype == "step":
+                    title = event.get("title", "")
+                    status = event.get("status", "")
+                    existing = next((s for s in steps if s["title"] == title), None)
+                    if existing:
+                        existing["status"] = status
+                    else:
+                        steps.append({"title": title, "status": status})
+                    yield _sse("step", json.dumps(
+                        {"title": title, "status": status},
+                        ensure_ascii=False,
+                    ))
 
-            # 以 JSON 格式发送结果，json.dumps 自动转义换行符确保 SSE 单行安全
-            response_data = json.dumps(
-                {"text": text, "images": images},
-                ensure_ascii=False,
-            )
-            yield f"event: result\ndata: {response_data}\n\n"
+                elif etype == "delta":
+                    chunk = event.get("text", "")
+                    full_text += chunk
+                    yield _sse("delta", json.dumps(
+                        {"text": chunk}, ensure_ascii=False,
+                    ))
 
-            # 持久化 AI 回复
+                elif etype == "text_done":
+                    full_text = event.get("text", full_text)
+                    yield _sse("text_done", json.dumps(
+                        {"text": full_text}, ensure_ascii=False,
+                    ))
+
+                elif etype == "images":
+                    status = event.get("status", "")
+                    urls = event.get("urls", [])
+                    if urls:
+                        all_images = urls
+                    yield _sse("images", json.dumps(
+                        {"status": status, "urls": urls},
+                        ensure_ascii=False,
+                    ))
+
+                elif etype == "error":
+                    yield _sse("error", json.dumps(
+                        {"message": event.get("message", "未知错误")},
+                        ensure_ascii=False,
+                    ))
+
+                elif etype == "done":
+                    pass
+
+            for step in steps:
+                if step["status"] == "running":
+                    step["status"] = "done"
+                    yield _sse("step", json.dumps(
+                        {"title": step["title"], "status": "done"},
+                        ensure_ascii=False,
+                    ))
+
             metadata: dict[str, Any] = {}
-            if images:
-                metadata["images"] = images
+            if all_images:
+                metadata["images"] = all_images
+            if steps:
+                metadata["steps"] = steps
 
             supabase.table("messages").insert({
                 "conversation_id": conversation_id,
                 "role": "assistant",
-                "content": text or "工作流未返回结果",
+                "content": full_text or "工作流未返回结果",
                 "metadata": metadata,
             }).execute()
 
         except Exception as e:
-            yield f"event: error\ndata: ContentOps 调用异常: {str(e)}\n\n"
+            yield _sse("error", json.dumps(
+                {"message": f"ContentOps 调用异常: {e!s}"},
+                ensure_ascii=False,
+            ))
 
-        yield "event: done\ndata: [DONE]\n\n"
+        yield _sse("done", "[DONE]")
 
     return StreamingResponse(
         event_generator(),
