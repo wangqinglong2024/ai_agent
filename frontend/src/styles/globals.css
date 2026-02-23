@@ -448,6 +448,346 @@ body {
 }
 
 /* ============================================
+   AI Prose - 营销文案自动排版
+   无论内容结构如何变化都保持优雅可读
+   ============================================ */
+.ai-prose {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+}
+
+/* 段落间距 */
+.ai-prose p {
+  margin: 0 0 0.85em;
+}
+.ai-prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* 首段加粗强调（杂志风格导语） */
+.ai-prose > p:first-child {
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.75;
+  color: var(--text-primary);
+}
+
+/* 标题层级 */
+.ai-prose h1,
+.ai-prose h2,
+.ai-prose h3 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 1.2em 0 0.5em;
+  line-height: 1.4;
+}
+.ai-prose h1 { font-size: 1.25rem; }
+.ai-prose h2 { font-size: 1.1rem; }
+.ai-prose h3 { font-size: 1rem; }
+.ai-prose > h1:first-child,
+.ai-prose > h2:first-child,
+.ai-prose > h3:first-child {
+  margin-top: 0;
+}
+
+/* 列表 */
+.ai-prose ul,
+.ai-prose ol {
+  padding-left: 1.3em;
+  margin: 0.6em 0;
+}
+.ai-prose li {
+  margin: 0.3em 0;
+  padding-left: 0.25em;
+}
+.ai-prose ul > li {
+  list-style: none;
+  position: relative;
+}
+.ai-prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: -1em;
+  top: 0.65em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* 引用块 — 高亮提示风 */
+.ai-prose blockquote {
+  margin: 0.8em 0;
+  padding: 0.6em 1em;
+  border-left: 3px solid var(--glass-border);
+  background: var(--bg-glass);
+  border-radius: 0 12px 12px 0;
+  font-style: normal;
+}
+.ai-prose blockquote p {
+  margin: 0;
+}
+
+/* 加粗高亮 */
+.ai-prose strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* 行内代码 */
+.ai-prose code {
+  background: var(--input-bg);
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+  font-size: 0.85em;
+}
+
+/* 代码块 */
+.ai-prose pre {
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 0.8em 1em;
+  overflow-x: auto;
+  margin: 0.8em 0;
+}
+.ai-prose pre code {
+  background: none;
+  padding: 0;
+}
+
+/* 分割线 */
+.ai-prose hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--glass-border), transparent);
+  margin: 1.2em 0;
+}
+
+/* 链接 */
+.ai-prose a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--glass-border);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s;
+}
+.ai-prose a:hover {
+  text-decoration-color: var(--text-muted);
+}
+
+/* ============================================
+   Image Gallery - 消息内图片预览缩略图
+   ============================================ */
+.image-thumb {
+  background: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: none;
+  padding: 0;
+}
+
+.image-thumb:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 30px var(--glass-shadow),
+    inset 0 1px 0 0 var(--glass-inset);
+}
+
+.image-thumb:focus-visible {
+  box-shadow: 0 0 0 4px var(--input-focus-glow);
+}
+
+/* ============================================
+   Gallery Scroll - 横向滑动画廊 (>3张图)
+   ============================================ */
+.gallery-scroll-track {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.gallery-scroll-track::-webkit-scrollbar {
+  display: none;
+}
+.gallery-scroll-track > * {
+  scroll-snap-align: start;
+}
+
+.gallery-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.25s ease-out;
+  opacity: 0.7;
+  padding: 0;
+}
+.gallery-scroll-btn:hover {
+  opacity: 1;
+  background: var(--bg-glass-hover);
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* ============================================
+   Lightbox - 全屏图片查看器 (Three.js 粒子边框)
+   ============================================ */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  animation: lightbox-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lightbox-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.lightbox-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 82vw;
+  max-height: 78vh;
+}
+
+.lightbox-image {
+  max-width: 82vw;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 0 40px rgba(251, 113, 133, 0.15),
+    0 0 80px rgba(56, 189, 248, 0.10),
+    0 0 120px rgba(251, 191, 36, 0.08),
+    0 20px 60px rgba(0, 0, 0, 0.6);
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.lightbox-loading {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 毛玻璃控制按钮通用基底 */
+.lightbox-close,
+.lightbox-nav {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: all 0.3s ease-out;
+}
+
+.lightbox-close:hover,
+.lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.08);
+  color: white;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.lightbox-close:hover {
+  transform: scale(1.08) rotate(90deg);
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.lightbox-nav:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.lightbox-nav-prev {
+  left: 20px;
+  transform: translateY(-50%);
+}
+
+.lightbox-nav-next {
+  right: 20px;
+  transform: translateY(-50%);
+}
+
+.lightbox-counter {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  padding: 6px 18px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+}
+
+/* ============================================
    Typing Cursor
    ============================================ */
 .typing-cursor {

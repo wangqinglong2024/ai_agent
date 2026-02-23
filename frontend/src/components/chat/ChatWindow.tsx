@@ -6,6 +6,7 @@ export default function ChatWindow() {
   const messages = useChatStore((s) => s.messages);
   const streaming = useChatStore((s) => s.streaming);
   const streamingContent = useChatStore((s) => s.streamingContent);
+  const streamingImages = useChatStore((s) => s.streamingImages);
   const loadingMessages = useChatStore((s) => s.loadingMessages);
   const sendError = useChatStore((s) => s.sendError);
 
@@ -44,16 +45,26 @@ export default function ChatWindow() {
             </svg>
           </div>
           <p className="text-sm text-[var(--text-muted)]">发送消息开始对话</p>
-          <p className="text-xs text-[var(--text-muted)]">Dify AI 驱动</p>
+          <p className="text-xs text-[var(--text-muted)]">ContentOps 驱动</p>
         </div>
       )}
 
       {messages.map((msg) => (
-        <MessageBubble key={msg.id} role={msg.role} content={msg.content} />
+        <MessageBubble
+          key={msg.id}
+          role={msg.role}
+          content={msg.content}
+          images={(msg.metadata?.images as string[]) || []}
+        />
       ))}
 
       {streaming && streamingContent && (
-        <MessageBubble role="assistant" content={streamingContent} isStreaming />
+        <MessageBubble
+          role="assistant"
+          content={streamingContent}
+          images={streamingImages}
+          isStreaming
+        />
       )}
 
       {streaming && !streamingContent && (
@@ -63,7 +74,7 @@ export default function ChatWindow() {
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:150ms]" />
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-bounce [animation-delay:300ms]" />
           </div>
-          <span className="text-xs text-[var(--text-muted)]">AI 正在思考...</span>
+          <span className="text-xs text-[var(--text-muted)]">AI 正在生成...</span>
         </div>
       )}
 

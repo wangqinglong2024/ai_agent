@@ -1,10 +1,14 @@
 """
 对话管理路由
 职责：创建对话、发送消息、获取历史记录
-消息发送后自动调用 Dify 获取 AI 回复 (SSE 流式)
+消息发送后调用 Dify ContentOps 工作流，获取营销文案 + 图片链接
 
-新增功能：第一条消息发送后，自动根据内容生成对话标题
+SSE 事件协议：
+  event: result  → data: {"text": "...", "images": [...]}
+  event: done    → data: [DONE]
+  event: error   → data: 错误信息
 """
+import json
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -75,7 +79,6 @@ async def delete_conversation(
     supabase = get_supabase_admin()
     user_id: str = user["sub"]
 
-    # 确认该对话属于当前用户
     check = (
         supabase.table("conversations")
         .select("id")
@@ -93,7 +96,10 @@ async def delete_conversation(
 # --------------------------------------------------------------------------
 # 消息
 # --------------------------------------------------------------------------
-@router.get("/conversations/{conversation_id}/messages", response_model=list[MessageResponse])
+@router.get(
+    "/conversations/{conversation_id}/messages",
+    response_model=list[MessageResponse],
+)
 async def get_messages(
     conversation_id: str,
     user: dict[str, Any] = Depends(get_current_user),
@@ -102,7 +108,6 @@ async def get_messages(
     supabase = get_supabase_admin()
     user_id: str = user["sub"]
 
-    # 先验证对话所有权
     check = (
         supabase.table("conversations")
         .select("id")
@@ -127,11 +132,8 @@ async def get_messages(
 def _generate_title_from_query(query: str) -> str:
     """
     根据用户的第一条消息生成对话标题
-    
-    策略：提取前30个字符作为标题，去除换行符，添加省略号
-    未来可以调用 Dify workflow 或 LLM 生成更智能的标题
+    策略：提取前30个字符作为标题，去除换行符
     """
-    # 简单策略：取前30个字符
     clean_query = query.replace("\n", " ").replace("\r", " ").strip()
     if len(clean_query) <= 30:
         return clean_query
@@ -145,22 +147,21 @@ async def send_message(
     user: dict[str, Any] = Depends(get_current_user),
 ) -> StreamingResponse:
     """
-    发送消息并获取 AI 回复 (SSE 流式)
-    
+    发送消息并调用 ContentOps 工作流获取营销文案 + 图片 (SSE)
+
     流程:
     1. 保存用户消息到 Supabase
     2. 如果是第一条消息，自动生成对话标题
-    3. 调用 Dify API 获取 AI 回复 (流式)
-    4. 将流式内容转发给前端
-    5. 流结束后保存 AI 完整回复到 Supabase
+    3. 调用 Dify ContentOps 工作流 (blocking)
+    4. 将结果以 SSE 格式返回前端 (result 事件包含 text + images)
+    5. 保存 AI 回复到 Supabase (content + metadata.images)
     """
     supabase = get_supabase_admin()
     user_id: str = user["sub"]
 
-    # 验证对话所有权
     conv = (
         supabase.table("conversations")
-        .select("id, title, dify_conversation_id")
+        .select("id, title")
         .eq("id", conversation_id)
         .eq("user_id", user_id)
         .execute()
@@ -169,9 +170,7 @@ async def send_message(
         raise HTTPException(status_code=404, detail="对话不存在")
 
     current_title: str = conv.data[0].get("title", "")
-    dify_conversation_id: str = conv.data[0].get("dify_conversation_id", "")
 
-    # 检查是否是第一条用户消息（用于自动命名）
     existing_messages = (
         supabase.table("messages")
         .select("id")
@@ -181,53 +180,51 @@ async def send_message(
     )
     is_first_message = len(existing_messages.data) == 0
 
-    # 1. 保存用户消息
     supabase.table("messages").insert({
         "conversation_id": conversation_id,
         "role": "user",
         "content": body.content,
     }).execute()
 
-    # 2. 如果是第一条消息且标题是默认的，自动生成标题
     if is_first_message and current_title == "新对话":
         new_title = _generate_title_from_query(body.content)
         supabase.table("conversations").update({
             "title": new_title,
         }).eq("id", conversation_id).execute()
 
-    # 3. 调用 Dify 并流式返回
     dify = DifyService()
 
     async def event_generator():
-        full_answer = ""
-        new_dify_conv_id = dify_conversation_id
+        try:
+            result = await dify.call_contentops(
+                query=body.content,
+                user_id=user_id,
+            )
 
-        async for chunk in dify.chat_stream(
-            query=body.content,
-            user_id=user_id,
-            conversation_id=dify_conversation_id,
-        ):
-            if chunk["type"] == "message":
-                full_answer += chunk["content"]
-                yield f"data: {chunk['content']}\n\n"
-            elif chunk["type"] == "message_end":
-                new_dify_conv_id = chunk.get("conversation_id", new_dify_conv_id)
-            elif chunk["type"] == "error":
-                yield f"event: error\ndata: {chunk['content']}\n\n"
+            text: str = result.get("text", "")
+            images: list[str] = result.get("images", [])
 
-        # 4. 保存 AI 完整回复
-        if full_answer:
+            # 以 JSON 格式发送结果，json.dumps 自动转义换行符确保 SSE 单行安全
+            response_data = json.dumps(
+                {"text": text, "images": images},
+                ensure_ascii=False,
+            )
+            yield f"event: result\ndata: {response_data}\n\n"
+
+            # 持久化 AI 回复
+            metadata: dict[str, Any] = {}
+            if images:
+                metadata["images"] = images
+
             supabase.table("messages").insert({
                 "conversation_id": conversation_id,
                 "role": "assistant",
-                "content": full_answer,
+                "content": text or "工作流未返回结果",
+                "metadata": metadata,
             }).execute()
 
-        # 5. 更新 Dify 对话 ID (首次对话时 Dify 会返回新 ID)
-        if new_dify_conv_id and new_dify_conv_id != dify_conversation_id:
-            supabase.table("conversations").update({
-                "dify_conversation_id": new_dify_conv_id,
-            }).eq("id", conversation_id).execute()
+        except Exception as e:
+            yield f"event: error\ndata: ContentOps 调用异常: {str(e)}\n\n"
 
         yield "event: done\ndata: [DONE]\n\n"
 
@@ -236,6 +233,6 @@ async def send_message(
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",  # 告诉 Nginx 不缓冲
+            "X-Accel-Buffering": "no",
         },
     )

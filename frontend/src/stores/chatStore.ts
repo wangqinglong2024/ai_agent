@@ -1,6 +1,6 @@
 /**
  * 对话状态管理 (Zustand)
- * 
+ *
  * 重要：此store的状态与当前登录用户强绑定
  * 用户切换时必须完全重置状态，防止数据混淆
  */
@@ -16,34 +16,22 @@ import {
 } from "@/lib/api";
 
 interface ChatState {
-  /** 对话列表 */
   conversations: Conversation[];
-  /** 当前对话 ID */
   activeConversationId: string | null;
-  /** 当前对话的消息列表 */
   messages: Message[];
-  /** 正在加载对话列表 */
   loadingConversations: boolean;
-  /** 正在加载消息 */
   loadingMessages: boolean;
-  /** AI 是否正在回复中 */
   streaming: boolean;
-  /** 正在流式生成的内容 */
   streamingContent: string;
-  /** 错误信息（发送失败时） */
+  /** ContentOps 工作流返回的图片链接（流式期间暂存） */
+  streamingImages: string[];
   sendError: string | null;
 
-  /** 加载对话列表 */
   fetchConversations: () => Promise<void>;
-  /** 创建新对话并设为活跃 */
   newConversation: (title?: string) => Promise<Conversation>;
-  /** 删除对话 */
   removeConversation: (id: string) => Promise<void>;
-  /** 选中对话并加载消息 */
   selectConversation: (id: string) => Promise<void>;
-  /** 发送消息 (触发 AI 流式回复) */
   send: (content: string) => Promise<void>;
-  /** 重置所有状态（用户登出/切换时调用） */
   reset: () => void;
 }
 
@@ -55,6 +43,7 @@ const initialState = {
   loadingMessages: false,
   streaming: false,
   streamingContent: "",
+  streamingImages: [] as string[],
   sendError: null,
 };
 
@@ -111,13 +100,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   send: async (content) => {
-    const { activeConversationId, conversations } = get();
+    const { activeConversationId } = get();
     if (!activeConversationId) return;
 
-    // 检查是否是第一条消息（对话列表中该对话的消息数为0）
     const isFirstMessage = get().messages.length === 0;
 
-    // 乐观更新 - 先把用户消息显示出来
     const userMsg: Message = {
       id: crypto.randomUUID(),
       conversation_id: activeConversationId,
@@ -132,37 +119,42 @@ export const useChatStore = create<ChatState>((set, get) => ({
       messages: [...state.messages, userMsg],
       streaming: true,
       streamingContent: "",
+      streamingImages: [],
       sendError: null,
     }));
 
     await sendMessage(
       activeConversationId,
       content,
-      // onChunk: 每收到一段文字
       (text) => {
         set((state) => ({
           streamingContent: state.streamingContent + text,
         }));
       },
-      // onDone: 流结束
       async () => {
-        const { streamingContent } = get();
+        const { streamingContent, streamingImages } = get();
+        const metadata: Record<string, unknown> = {};
+        if (streamingImages.length > 0) {
+          metadata.images = streamingImages;
+        }
+
         const assistantMsg: Message = {
           id: crypto.randomUUID(),
           conversation_id: activeConversationId,
           role: "assistant",
           content: streamingContent,
           tokens_used: 0,
-          metadata: {},
+          metadata,
           created_at: new Date().toISOString(),
         };
+
         set((state) => ({
           messages: [...state.messages, assistantMsg],
           streaming: false,
           streamingContent: "",
+          streamingImages: [],
         }));
 
-        // 如果是第一条消息，重新获取对话列表以更新标题
         if (isFirstMessage) {
           try {
             const updatedConversations = await getConversations();
@@ -172,11 +164,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
           }
         }
       },
-      // onError
       (error) => {
         console.error("消息发送失败:", error);
-        set({ streaming: false, streamingContent: "", sendError: error });
-      }
+        set({
+          streaming: false,
+          streamingContent: "",
+          streamingImages: [],
+          sendError: error,
+        });
+      },
+      (urls) => {
+        set({ streamingImages: urls });
+      },
     );
   },
 

@@ -1,39 +1,170 @@
+import { useState, useRef, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
+import ImageLightbox from "./ImageLightbox";
 
 interface Props {
   role: string;
   content: string;
+  images?: string[];
   isStreaming?: boolean;
 }
 
-export default function MessageBubble({ role, content, isStreaming }: Props) {
+/**
+ * 从文本中移除图片链接，避免画廊与正文重复展示
+ * 覆盖 Markdown 图片语法 + 裸 URL 两种情况
+ */
+function stripImageUrls(text: string): string {
+  let s = text;
+  s = s.replace(/!\[.*?\]\(https?:\/\/\S+?\)/g, "");
+  s = s.replace(
+    /^\s*https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|svg|bmp)(?:\?\S*)?\s*$/gim,
+    "",
+  );
+  s = s.replace(/\n{3,}/g, "\n\n");
+  return s.trim();
+}
+
+export default function MessageBubble({
+  role,
+  content,
+  images = [],
+  isStreaming,
+}: Props) {
   const isUser = role === "user";
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const displayText = useMemo(
+    () => (isUser ? content : stripImageUrls(content)),
+    [isUser, content],
+  );
+
+  const showScrollGallery = images.length > 3;
+
+  const scrollBy = (dir: number) => {
+    scrollRef.current?.scrollBy({ left: dir * 220, behavior: "smooth" });
+  };
 
   return (
-    <div
-      className={`flex max-w-4xl mx-auto ${isUser ? "justify-end" : "justify-start"}`}
-    >
+    <>
       <div
-        className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-4 py-3 transition-all ${
-          isUser
-            ? "glass-bubble-user"
-            : "glass-bubble-ai"
-        }`}
+        className={`flex max-w-4xl mx-auto ${isUser ? "justify-end" : "justify-start"}`}
       >
-        <div className={`mb-1.5 text-[11px] font-medium text-[var(--text-muted)]`}>
-          {isUser ? "你" : "AI"}
-        </div>
+        <div
+          className={`rounded-2xl px-5 py-4 transition-all ${
+            isUser
+              ? "max-w-[80%] md:max-w-[70%] glass-bubble-user"
+              : "max-w-[88%] md:max-w-[78%] glass-bubble-ai"
+          }`}
+        >
+          <div className="mb-1.5 text-[11px] font-medium text-[var(--text-muted)]">
+            {isUser ? "你" : "AI"}
+          </div>
 
-        <div className="prose prose-sm max-w-none text-[var(--text-secondary)] [&_p]:leading-relaxed [&_code]:rounded [&_code]:bg-[var(--input-bg)] [&_code]:px-1.5 [&_code]:py-0.5 [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-[var(--glass-border)] [&_pre]:bg-[var(--input-bg)]">
-          {isUser ? (
-            <p className="m-0 whitespace-pre-wrap">{content}</p>
-          ) : (
-            <ReactMarkdown>{content}</ReactMarkdown>
+          {/* 文本内容 — AI 侧使用增强 prose 排版 */}
+          {displayText && (
+            <div
+              className={
+                isUser
+                  ? "text-sm text-[var(--text-secondary)]"
+                  : "ai-prose text-[var(--text-secondary)]"
+              }
+            >
+              {isUser ? (
+                <p className="m-0 whitespace-pre-wrap">{displayText}</p>
+              ) : (
+                <ReactMarkdown>{displayText}</ReactMarkdown>
+              )}
+            </div>
           )}
-        </div>
 
-        {isStreaming && <span className="typing-cursor" />}
+          {/* 图片画廊 — ≤3 网格展示，>3 横向滑动 */}
+          {images.length > 0 && (
+            showScrollGallery ? (
+              <div className="relative mt-4">
+                {/* 左右滚动按钮 */}
+                <button
+                  type="button"
+                  onClick={() => scrollBy(-1)}
+                  className="gallery-scroll-btn left-0"
+                  aria-label="向左滚动"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollBy(1)}
+                  className="gallery-scroll-btn right-0"
+                  aria-label="向右滚动"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+
+                <div
+                  ref={scrollRef}
+                  className="gallery-scroll-track flex gap-2.5 overflow-x-auto pb-2"
+                >
+                  {images.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setLightboxIndex(i)}
+                      className="image-thumb group relative shrink-0 overflow-hidden rounded-xl border border-[var(--glass-border)] w-[180px] aspect-[4/3] cursor-pointer transition-all duration-300 hover:shadow-lg focus:outline-none"
+                      aria-label={`查看图片 ${i + 1}`}
+                    >
+                      <img src={url} alt={`生成图片 ${i + 1}`} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pb-2">
+                        <span className="flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                          放大
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div
+                className={`mt-4 grid gap-2.5 ${
+                  images.length === 1
+                    ? "grid-cols-1 max-w-[240px]"
+                    : images.length === 2
+                      ? "grid-cols-2"
+                      : "grid-cols-3"
+                }`}
+              >
+                {images.map((url, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setLightboxIndex(i)}
+                    className="image-thumb group relative overflow-hidden rounded-xl border border-[var(--glass-border)] aspect-[4/3] cursor-pointer transition-all duration-300 hover:shadow-lg focus:outline-none"
+                    aria-label={`查看图片 ${i + 1}`}
+                  >
+                    <img src={url} alt={`生成图片 ${i + 1}`} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pb-2.5">
+                      <span className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                        放大
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )
+          )}
+
+          {isStreaming && <span className="typing-cursor" />}
+        </div>
       </div>
-    </div>
+
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          images={images}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
+    </>
   );
 }

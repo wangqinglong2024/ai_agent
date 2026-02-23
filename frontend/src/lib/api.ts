@@ -90,20 +90,20 @@ export function getMessages(conversationId: string): Promise<Message[]> {
 }
 
 /**
- * 发送消息（SSE 流式接收 AI 回复）
+ * 发送消息（SSE 接收 ContentOps 工作流结果）
  *
- * @param conversationId 对话 ID
- * @param content 用户消息
- * @param onChunk 每收到一段文字的回调
- * @param onDone 流式结束回调
- * @param onError 错误回调
+ * SSE 事件协议：
+ *   event: result → data: {"text": "...", "images": [...]}
+ *   event: error  → data: 错误信息
+ *   event: done   → data: [DONE]
  */
 export async function sendMessage(
   conversationId: string,
   content: string,
   onChunk: (text: string) => void,
   onDone: () => void,
-  onError: (error: string) => void
+  onError: (error: string) => void,
+  onImages?: (urls: string[]) => void,
 ): Promise<void> {
   const token = await getAccessToken();
 
@@ -148,14 +148,31 @@ export async function sendMessage(
       }
       if (line.startsWith("data: ")) {
         const data = line.slice(6);
+
         if (pendingEvent === "error") {
           onError(data);
           return;
         }
+
+        if (pendingEvent === "result") {
+          try {
+            const result = JSON.parse(data);
+            if (result.text) onChunk(result.text);
+            if (Array.isArray(result.images) && result.images.length > 0) {
+              onImages?.(result.images);
+            }
+          } catch {
+            onChunk(data);
+          }
+          pendingEvent = "";
+          continue;
+        }
+
         if (data === "[DONE]") {
           onDone();
           return;
         }
+
         onChunk(data);
         pendingEvent = "";
       }
