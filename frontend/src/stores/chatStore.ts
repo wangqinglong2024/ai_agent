@@ -8,6 +8,7 @@ import {
   Conversation,
   Message,
   WorkflowStep,
+  ThinkingItem,
   getConversations,
   createConversation,
   deleteConversation,
@@ -25,6 +26,7 @@ interface ChatState {
   streamingContent: string;
   streamingImages: string[];
   streamingSteps: WorkflowStep[];
+  streamingThinkings: ThinkingItem[];
   imagesLoading: boolean;
   sendError: string | null;
 
@@ -46,6 +48,7 @@ const initialState = {
   streamingContent: "",
   streamingImages: [] as string[],
   streamingSteps: [] as WorkflowStep[],
+  streamingThinkings: [] as ThinkingItem[],
   imagesLoading: false,
   sendError: null,
 };
@@ -122,6 +125,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       streamingContent: "",
       streamingImages: [],
       streamingSteps: [],
+      streamingThinkings: [],
       imagesLoading: false,
       sendError: null,
     }));
@@ -158,14 +162,34 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
       },
 
+      onThinking: (item) => {
+        set((state) => {
+          const thinkings = [...state.streamingThinkings];
+          // 同一节点的思考内容追加（如果流式分段到达）
+          const idx = thinkings.findIndex((t) => t.nodeTitle === item.nodeTitle);
+          if (idx >= 0) {
+            thinkings[idx] = {
+              ...thinkings[idx],
+              content: thinkings[idx].content + item.content,
+            };
+          } else {
+            thinkings.push(item);
+          }
+          return { streamingThinkings: thinkings };
+        });
+      },
+
       onDone: async () => {
-        const { streamingContent, streamingImages, streamingSteps } = get();
+        const { streamingContent, streamingImages, streamingSteps, streamingThinkings } = get();
         const metadata: Record<string, unknown> = {};
         if (streamingImages.length > 0) {
           metadata.images = streamingImages;
         }
         if (streamingSteps.length > 0) {
           metadata.steps = streamingSteps;
+        }
+        if (streamingThinkings.length > 0) {
+          metadata.thinkings = streamingThinkings;
         }
 
         const assistantMsg: Message = {
@@ -184,6 +208,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           streamingContent: "",
           streamingImages: [],
           streamingSteps: [],
+          streamingThinkings: [],
           imagesLoading: false,
         }));
 
@@ -204,6 +229,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           streamingContent: "",
           streamingImages: [],
           streamingSteps: [],
+          streamingThinkings: [],
           imagesLoading: false,
           sendError: error,
         });

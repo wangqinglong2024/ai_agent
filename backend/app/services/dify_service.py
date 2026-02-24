@@ -36,6 +36,7 @@ class DifyService:
           delta      — {"text": str}                  增量文本
           text_done  — {"text": str}                  全量文本
           images     — {"status": "generating"|"done", "urls": [...]}
+          thinking   — {"node_title": str, "content": str}  LLM 推理/思考内容
           error      — {"message": str}
           done       — {}
         """
@@ -129,12 +130,22 @@ class DifyService:
                             nd = data.get("data", data)
                             title = nd.get("title", "处理中")
                             yield {"type": "step", "title": title, "status": "done"}
+                            # 提取 LLM 节点的 thinking/reasoning 内容
+                            thinking = self._extract_thinking(nd)
+                            if thinking:
+                                yield {"type": "thinking", "node_title": title, "content": thinking}
                             outputs = nd.get("outputs") or {}
                             if isinstance(outputs, dict):
                                 ni = self._extract_images(outputs, "")
                                 if ni:
                                     images = list(dict.fromkeys(images + ni))
                                     yield {"type": "images", "status": "done", "urls": images}
+
+                        elif ev == "agent_thought":
+                            # Dify agent 模式思考链事件
+                            thought_text = data.get("thought", "")
+                            if thought_text:
+                                yield {"type": "thinking", "node_title": "AI 推理", "content": thought_text}
 
                         elif ev == "message":
                             chunk = data.get("answer", "")
@@ -267,6 +278,10 @@ class DifyService:
                             nd = data.get("data", data)
                             title = nd.get("title", "处理中")
                             yield {"type": "step", "title": title, "status": "done"}
+                            # 提取 LLM 节点的 thinking/reasoning 内容
+                            thinking = self._extract_thinking(nd)
+                            if thinking:
+                                yield {"type": "thinking", "node_title": title, "content": thinking}
                             outputs = nd.get("outputs") or {}
                             if isinstance(outputs, dict):
                                 ni = self._extract_images(outputs, "")
@@ -315,6 +330,56 @@ class DifyService:
             yield {"type": "error", "message": f"Workflow 调用异常: {e!s}"}
 
         yield {"type": "done"}
+
+    # ==================================================================
+    # Thinking/Reasoning 提取器 — 从 LLM 节点数据中提取思考内容
+    # ==================================================================
+    def _extract_thinking(self, node_data: dict) -> str:
+        """
+        从 Dify node_finished 数据中提取 LLM 的思考/推理内容。
+         支持多种 Dify 版本的数据结构：
+          - process_data.reasoning (Dify 1.x)
+          - process_data.reasoning_content (部分模型)
+          - outputs.reasoning_content (Gemini 等扩展思考)
+          - execution_metadata.reasoning (部分版本)
+        """
+        # 仅对 LLM 类型节点提取 thinking
+        node_type = node_data.get("node_type", "")
+        if node_type not in ("llm", "agent", "parameter-extractor", "question-classifier"):
+            return ""
+
+        # 优先从 process_data 提取
+        process_data = node_data.get("process_data") or {}
+        if isinstance(process_data, dict):
+            for key in ("reasoning", "reasoning_content", "thought", "thinking"):
+                val = process_data.get(key, "")
+                if isinstance(val, str) and val.strip():
+                    return val.strip()
+            # 检查 model_outputs 内的 reasoning
+            model_outputs = process_data.get("model_outputs") or {}
+            if isinstance(model_outputs, dict):
+                for key in ("reasoning_content", "reasoning", "thinking"):
+                    val = model_outputs.get(key, "")
+                    if isinstance(val, str) and val.strip():
+                        return val.strip()
+
+        # 从 outputs 提取
+        outputs = node_data.get("outputs") or {}
+        if isinstance(outputs, dict):
+            for key in ("reasoning_content", "reasoning", "thinking"):
+                val = outputs.get(key, "")
+                if isinstance(val, str) and val.strip():
+                    return val.strip()
+
+        # 从 execution_metadata 提取
+        exec_meta = node_data.get("execution_metadata") or {}
+        if isinstance(exec_meta, dict):
+            for key in ("reasoning", "reasoning_content"):
+                val = exec_meta.get(key, "")
+                if isinstance(val, str) and val.strip():
+                    return val.strip()
+
+        return ""
 
     # ==================================================================
     # 通用提取器（复用原有逻辑）

@@ -1,13 +1,14 @@
 import { useState, useRef, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import ImageLightbox from "./ImageLightbox";
-import WorkflowSteps, { type StepItem } from "./WorkflowSteps";
+import WorkflowSteps, { type StepItem, type ThinkingItem } from "./WorkflowSteps";
 
 interface Props {
   role: string;
   content: string;
   images?: string[];
   steps?: StepItem[];
+  thinkings?: ThinkingItem[];
   stepsDefaultCollapsed?: boolean;
   imagesLoading?: boolean;
   isStreaming?: boolean;
@@ -36,6 +37,7 @@ export default function MessageBubble({
   content,
   images = [],
   steps = [],
+  thinkings = [],
   stepsDefaultCollapsed = false,
   imagesLoading = false,
   isStreaming,
@@ -73,7 +75,11 @@ export default function MessageBubble({
 
           {/* 工作流步骤面板 */}
           {!isUser && steps.length > 0 && (
-            <WorkflowSteps steps={steps} defaultCollapsed={stepsDefaultCollapsed} />
+            <WorkflowSteps
+              steps={steps}
+              thinkings={thinkings}
+              defaultCollapsed={stepsDefaultCollapsed}
+            />
           )}
 
           {/* 文本内容 */}

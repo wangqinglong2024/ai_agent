@@ -201,6 +201,7 @@ async def send_message(
         full_text = ""
         all_images: list[str] = []
         steps: list[dict[str, str]] = []
+        thinkings: list[dict[str, str]] = []
 
         try:
             async for event in dify.stream_contentops(
@@ -220,6 +221,16 @@ async def send_message(
                         {"title": title, "status": status},
                         ensure_ascii=False,
                     ))
+
+                elif etype == "thinking":
+                    node_title = event.get("node_title", "")
+                    content = event.get("content", "")
+                    if content:
+                        thinkings.append({"node_title": node_title, "content": content})
+                        yield _sse("thinking", json.dumps(
+                            {"node_title": node_title, "content": content},
+                            ensure_ascii=False,
+                        ))
 
                 elif etype == "delta":
                     chunk = event.get("text", "")
@@ -266,6 +277,8 @@ async def send_message(
                 metadata["images"] = all_images
             if steps:
                 metadata["steps"] = steps
+            if thinkings:
+                metadata["thinkings"] = thinkings
 
             supabase.table("messages").insert({
                 "conversation_id": conversation_id,

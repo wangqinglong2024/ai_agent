@@ -8,6 +8,7 @@ export default function ChatWindow() {
   const streamingContent = useChatStore((s) => s.streamingContent);
   const streamingImages = useChatStore((s) => s.streamingImages);
   const streamingSteps = useChatStore((s) => s.streamingSteps);
+  const streamingThinkings = useChatStore((s) => s.streamingThinkings);
   const imagesLoading = useChatStore((s) => s.imagesLoading);
   const loadingMessages = useChatStore((s) => s.loadingMessages);
   const sendError = useChatStore((s) => s.sendError);
@@ -16,7 +17,7 @@ export default function ChatWindow() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingContent, streamingSteps, streamingImages]);
+  }, [messages, streamingContent, streamingSteps, streamingImages, streamingThinkings]);
 
   if (loadingMessages) {
     return (
@@ -51,16 +52,26 @@ export default function ChatWindow() {
         </div>
       )}
 
-      {messages.map((msg) => (
-        <MessageBubble
-          key={msg.id}
-          role={msg.role}
-          content={msg.content}
-          images={(msg.metadata?.images as string[]) || []}
-          steps={(msg.metadata?.steps as Array<{ title: string; status: "running" | "done" }>) || []}
-          stepsDefaultCollapsed
-        />
-      ))}
+      {messages.map((msg) => {
+        /* 历史消息的 thinkings 使用 snake_case (node_title)，转为 camelCase */
+        const rawThinkings = (msg.metadata?.thinkings as Array<Record<string, string>>) || [];
+        const mappedThinkings = rawThinkings.map((t) => ({
+          nodeTitle: t.nodeTitle || t.node_title || "",
+          content: t.content || "",
+        }));
+
+        return (
+          <MessageBubble
+            key={msg.id}
+            role={msg.role}
+            content={msg.content}
+            images={(msg.metadata?.images as string[]) || []}
+            steps={(msg.metadata?.steps as Array<{ title: string; status: "running" | "done" }>) || []}
+            thinkings={mappedThinkings}
+            stepsDefaultCollapsed
+          />
+        );
+      })}
 
       {/* 流式 AI 回复 — 实时进度 + 增量文本 + 图片 */}
       {streaming && (
@@ -69,6 +80,7 @@ export default function ChatWindow() {
           content={streamingContent}
           images={streamingImages}
           steps={streamingSteps}
+          thinkings={streamingThinkings}
           imagesLoading={imagesLoading}
           isStreaming
         />

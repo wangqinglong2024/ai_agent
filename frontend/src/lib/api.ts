@@ -88,11 +88,18 @@ export interface WorkflowStep {
   status: "running" | "done";
 }
 
+/** LLM 思考/推理内容（如 Gemini 扩展思维） */
+export interface ThinkingItem {
+  nodeTitle: string;
+  content: string;
+}
+
 export interface StreamCallbacks {
   onStep?: (step: WorkflowStep) => void;
   onDelta?: (text: string) => void;
   onTextDone?: (text: string) => void;
   onImages?: (data: { status: string; urls: string[] }) => void;
+  onThinking?: (item: ThinkingItem) => void;
   onDone?: () => void;
   onError?: (error: string) => void;
 }
@@ -105,6 +112,7 @@ export interface StreamCallbacks {
  *   delta      — 增量文本
  *   text_done  — 全量文本（最终校正）
  *   images     — 图片状态 (generating / done + urls)
+ *   thinking   — LLM 思考/推理内容
  *   error      — 错误信息
  *   done       — 流结束
  */
@@ -191,6 +199,13 @@ export async function sendMessage(
               callbacks.onImages?.({
                 status: data.status || "",
                 urls: data.urls || [],
+              });
+              break;
+
+            case "thinking":
+              callbacks.onThinking?.({
+                nodeTitle: data.node_title || "",
+                content: data.content || "",
               });
               break;
 
