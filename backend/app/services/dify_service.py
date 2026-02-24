@@ -277,6 +277,10 @@ class DifyService:
                         elif ev == "node_finished":
                             nd = data.get("data", data)
                             title = nd.get("title", "处理中")
+                            
+                            # DEBUG: 打印节点结束详情，排查搜索受限原因
+                            print(f"[Dify Node DONE] Title: {title}, Status: {nd.get('status')}, Outputs: {json.dumps(nd.get('outputs'), ensure_ascii=False)}")
+
                             yield {"type": "step", "title": title, "status": "done"}
                             # 提取 LLM 节点的 thinking/reasoning 内容
                             thinking = self._extract_thinking(nd)
