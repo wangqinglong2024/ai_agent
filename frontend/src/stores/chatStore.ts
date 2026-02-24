@@ -75,6 +75,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
       conversations: [conv, ...state.conversations],
       activeConversationId: conv.id,
       messages: [],
+      // 彻底清理流式残余状态，避免新对话页面残留旧内容
+      streaming: false,
+      streamingContent: "",
+      streamingImages: [],
+      streamingSteps: [],
+      streamingThinkings: [],
+      imagesLoading: false,
+      sendError: null,
+      loadingMessages: false,
     }));
     return conv;
   },

@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
     SUPABASE_JWT_SECRET: str = ""
+    # Supabase 公共 URL（前端/外部访问，如 https://supabase.ideas.top）
+    # 若不设置则回退到 SUPABASE_URL
+    SUPABASE_PUBLIC_URL: str = ""
 
     # Dify
     DIFY_API_URL: str = ""

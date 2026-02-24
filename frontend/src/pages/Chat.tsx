@@ -21,11 +21,14 @@ export default function Chat() {
   // 二次确认删除：记录待确认的对话 ID
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  // URL 是对话选择的唯一真相源 (Single Source of Truth)
+  // 仅依赖 conversationId，避免 store 更新触发竞态
   useEffect(() => {
     if (conversationId && conversationId !== activeConversationId) {
       selectConversation(conversationId);
     }
-  }, [conversationId, activeConversationId, selectConversation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]);
 
   // 3 秒后自动取消确认状态
   useEffect(() => {
@@ -34,16 +37,16 @@ export default function Chat() {
     return () => clearTimeout(timer);
   }, [confirmDeleteId]);
 
-  const handleSelect = async (id: string) => {
+  const handleSelect = (id: string) => {
     setConfirmDeleteId(null);
-    await selectConversation(id);
+    // 只通过 navigate 触发 URL 变化，useEffect 负责调用 selectConversation
     navigate(`/chat/${id}`);
     if (window.innerWidth < 768) setShowSidebar(false);
   };
 
   const handleNew = async () => {
     const conv = await newConversation();
-    navigate(`/chat/${conv.id}`);
+    navigate(`/chat/${conv.id}`, { replace: false });
     if (window.innerWidth < 768) setShowSidebar(false);
   };
 

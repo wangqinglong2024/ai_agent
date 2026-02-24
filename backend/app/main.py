@@ -53,6 +53,16 @@ app.add_middleware(
 )
 
 # ============================================================================
+# Startup Events
+# ============================================================================
+@app.on_event("startup")
+async def on_startup() -> None:
+    """应用启动时初始化：确保 Supabase Storage 存储桶存在"""
+    from app.services.image_storage import ensure_bucket_exists
+    await ensure_bucket_exists()
+
+
+# ============================================================================
 # Register Routers
 # ============================================================================
 app.include_router(health.router, tags=["Health"])

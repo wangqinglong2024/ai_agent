@@ -11,6 +11,7 @@ SSE 事件协议（前端新版）：
   event: error      → data: {"message":"错误信息"}
   event: done       → data: [DONE]
 """
+import asyncio
 import json
 from typing import Any
 
@@ -26,6 +27,31 @@ from app.models.chat import (
 )
 from app.services.supabase_client import get_supabase_admin
 from app.services.dify_service import DifyService
+from app.services.image_storage import persist_images
+
+
+async def _background_persist_images(
+    message_id: str,
+    urls: list[str],
+    user_id: str,
+    conversation_id: str,
+    metadata: dict[str, Any],
+) -> None:
+    """
+    后台任务：将临时图片（fal.ai）持久化到 Supabase Storage
+    并更新已保存的消息记录。即使失败也不影响主流程。
+    """
+    try:
+        persisted = await persist_images(urls, user_id, conversation_id)
+        if persisted != urls:
+            metadata["images"] = persisted
+            sb = get_supabase_admin()
+            sb.table("messages").update(
+                {"metadata": metadata}
+            ).eq("id", message_id).execute()
+            print(f"[ImageStorage] 消息 {message_id[:8]}... 图片已更新为永久链接")
+    except Exception as e:
+        print(f"[ImageStorage] 后台持久化异常: {e!s}")
 
 router = APIRouter()
 
@@ -272,20 +298,32 @@ async def send_message(
                         ensure_ascii=False,
                     ))
 
+            # ★ 关键：先保存消息（使用原始 URL），确保数据不丢失
             metadata: dict[str, Any] = {}
             if all_images:
-                metadata["images"] = all_images
+                metadata["images"] = list(all_images)
             if steps:
                 metadata["steps"] = steps
             if thinkings:
                 metadata["thinkings"] = thinkings
 
-            supabase.table("messages").insert({
+            result = supabase.table("messages").insert({
                 "conversation_id": conversation_id,
                 "role": "assistant",
                 "content": full_text or "工作流未返回结果",
                 "metadata": metadata,
             }).execute()
+
+            # ★ 图片持久化放到后台任务，不阻塞 SSE 响应
+            if all_images and result.data:
+                msg_id = result.data[0]["id"]
+                asyncio.create_task(
+                    _background_persist_images(
+                        msg_id, list(all_images),
+                        user_id, conversation_id,
+                        dict(metadata),
+                    )
+                )
 
         except Exception as e:
             yield _sse("error", json.dumps(
