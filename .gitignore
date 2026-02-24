@@ -47,3 +47,4 @@ frontend/.cache/
 # Docker
 # =============================================
 docker-compose.override.yml
+CLAUDE.md
