@@ -308,7 +308,7 @@ export default function Login() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="输入用户名（不含邮箱）"
+                  placeholder="输入用户名"
                   autoComplete="username"
                   className="glass-input w-full rounded-full px-5 py-3"
                 />
