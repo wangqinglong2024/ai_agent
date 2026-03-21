@@ -264,7 +264,7 @@ export default function Login() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="输入用户名"
+                  placeholder="用户名 或 邮箱"
                   autoComplete="username"
                   className="glass-input w-full rounded-full px-5 py-3"
                 />
@@ -308,7 +308,7 @@ export default function Login() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="输入用户名"
+                  placeholder="仅字母、数字（不含 @）"
                   autoComplete="username"
                   className="glass-input w-full rounded-full px-5 py-3"
                 />
