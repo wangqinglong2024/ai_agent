@@ -1,0 +1,112 @@
+/* QSDS · parts/05-tags-table.css */
+
+/* ============== Tag / Chip ============== */
+
+.tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 24px; padding: 0 10px;
+  font: var(--weight-medium) 12px / 1 var(--font-sans);
+  border-radius: var(--radius-pill);
+  background: var(--glass-1);
+  border: 1px solid var(--color-brand-200);
+  color: var(--color-brand-700);
+}
+.tag-success { background: var(--color-success-50); border-color: var(--color-success-200); color: var(--color-success-700); }
+.tag-warning { background: var(--color-warning-50); border-color: var(--color-warning-200); color: var(--color-warning-700); }
+.tag-danger  { background: var(--color-danger-50);  border-color: var(--color-danger-200);  color: var(--color-danger-700); }
+.tag-info    { background: var(--color-info-50);    border-color: var(--color-info-100);    color: var(--color-info-700); }
+.tag-neutral { background: var(--color-neutral-100);border-color: var(--color-neutral-200); color: var(--color-neutral-700); }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 14px;
+  font: var(--weight-medium) 14px / 1 var(--font-sans);
+  border-radius: var(--radius-pill);
+  background: var(--glass-1);
+  border: var(--glass-border);
+  color: var(--color-neutral-700);
+  cursor: pointer; transition: var(--motion-fast);
+}
+.chip[aria-pressed="true"], .chip.is-active {
+  background: var(--color-brand-default);
+  color: var(--color-brand-on);
+  border-color: var(--color-brand-default);
+}
+
+/* ============== Table ============== */
+
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--weight-regular) var(--text-base) / 1.5 var(--font-sans);
+}
+
+.tbl thead th {
+  position: sticky; top: 0; z-index: 1;
+  height: 48px; padding: 0 16px;
+  background: var(--glass-2);
+  -webkit-backdrop-filter: var(--glass-blur);
+          backdrop-filter: var(--glass-blur);
+  font: var(--weight-semibold) 14px / 1 var(--font-display);
+  letter-spacing: 1px;
+  color: var(--color-neutral-700);
+  text-align: left;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.tbl tbody td {
+  height: 44px; padding: 0 16px;
+  border-bottom: 1px dashed var(--color-neutral-100);
+  vertical-align: middle;
+}
+.tbl tbody tr:hover { background: var(--glass-tint); }
+.tbl tbody tr.is-selected {
+  background: var(--color-brand-50);
+  box-shadow: inset 3px 0 0 var(--color-brand-default);
+}
+
+.tbl-num { text-align: right; font-variant-numeric: tabular-nums; }
+.tbl-time { font-variant-numeric: tabular-nums; }
+.tbl-actions { text-align: right; }
+
+[data-density="compact"] .tbl thead th { height: 40px; }
+[data-density="compact"] .tbl tbody td { height: 36px; }
+[data-density="elder"]   .tbl thead th { height: 64px; font-size: 16px; }
+[data-density="elder"]   .tbl tbody td { height: 64px; font-size: 18px; }
+
+.tbl-scroll { overflow: auto; max-height: 70vh; }
+
+/* 工具栏 / 底栏 */
+.tbl-toolbar {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.tbl-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--color-neutral-200);
+  font-size: var(--text-sm); color: var(--color-neutral-500);
+}
+
+/* 移动卡片化 */
+@media (max-width: 768px) {
+  .tbl-as-card thead { display: none; }
+  .tbl-as-card tbody tr {
+    display: block;
+    margin-bottom: var(--space-3);
+    background: var(--glass-1);
+    border: var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+  .tbl-as-card tbody td {
+    display: flex; justify-content: space-between; align-items: center;
+    height: auto; padding: 4px 0; border: none;
+  }
+  .tbl-as-card tbody td::before {
+    content: attr(data-label);
+    font: var(--weight-medium) 13px / 1 var(--font-display);
+    color: var(--color-neutral-500);
+    margin-right: 12px;
+  }
+}

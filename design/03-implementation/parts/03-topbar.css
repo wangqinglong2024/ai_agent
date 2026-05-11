@@ -1,0 +1,68 @@
+/* QSDS · parts/03-topbar.css */
+
+.topbar {
+  position: sticky; top: 0; z-index: var(--z-sticky);
+  display: flex; align-items: center; justify-content: space-between;
+  height: 76px; padding: 0 28px;
+  background:
+    linear-gradient(180deg,
+      rgba(20, 48, 79, 0.78) 0%,
+      rgba(31, 73, 113, 0.65) 100%);
+  -webkit-backdrop-filter: saturate(170%) blur(18px);
+          backdrop-filter: saturate(170%) blur(18px);
+  border-bottom: 1px solid rgba(255, 250, 235, 0.16);
+  color: var(--color-neutral-0);
+}
+
+.topbar-brand {
+  display: flex; align-items: center; gap: var(--space-3);
+  font: var(--weight-semibold) var(--text-lg) / 1 var(--font-display);
+  letter-spacing: 2px;
+  color: var(--color-neutral-0);
+}
+
+.topbar-nav {
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.topbar-nav a {
+  display: inline-flex; align-items: center; height: 44px; padding: 0 var(--space-4);
+  color: rgba(255, 250, 235, 0.72);
+  font: var(--weight-medium) 15px / 1 var(--font-display);
+  letter-spacing: 1px;
+  border-radius: var(--radius-md);
+  position: relative;
+  transition: color var(--motion-fast), background var(--motion-fast);
+}
+.topbar-nav a:hover { color: var(--color-neutral-0); background: rgba(255, 250, 235, 0.08); }
+.topbar-nav a.active { color: var(--color-neutral-0); }
+.topbar-nav a.active::after {
+  content: ''; position: absolute; left: 14px; right: 14px; bottom: 6px;
+  height: 2px; background: var(--color-danger-500); border-radius: 2px;
+}
+
+.topbar-actions {
+  display: flex; align-items: center; gap: var(--space-3);
+}
+
+/* 紧凑（移动） */
+@media (max-width: 768px) {
+  .topbar { height: 56px; padding: 0 16px; }
+  .topbar-nav { display: none; }
+  .topbar-brand { font-size: var(--text-md); letter-spacing: 1px; }
+}
+
+/* 适老 */
+[data-density="elder"] .topbar { height: 88px; }
+[data-density="elder"] .topbar-nav a { height: 56px; font-size: 18px; padding: 0 var(--space-5); }
+
+/* 二级 TopBar（粘附） */
+.topbar-sub {
+  position: sticky; top: 76px; z-index: calc(var(--z-sticky) - 1);
+  height: 56px; padding: 0 28px;
+  display: flex; align-items: center; gap: var(--space-4);
+  background: var(--glass-2);
+  -webkit-backdrop-filter: var(--glass-blur);
+          backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+@media (max-width: 768px) { .topbar-sub { top: 56px; padding: 0 16px; } }

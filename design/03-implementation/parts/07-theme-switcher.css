@@ -1,0 +1,75 @@
+/* QSDS · parts/07-theme-switcher.css */
+
+.qsds-settings {
+  width: 280px;
+  padding: 16px;
+}
+.qsds-settings h4 {
+  margin: 0 0 8px;
+  font: var(--weight-semibold) 13px / 1 var(--font-display);
+  letter-spacing: 1px;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+}
+.qsds-settings + .qsds-settings,
+.qsds-settings__group + .qsds-settings__group {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--color-neutral-200);
+}
+
+.qsds-settings__group { margin-bottom: 14px; }
+.qsds-settings__group:last-child { margin-bottom: 0; }
+
+/* segment buttons */
+.qsds-segment {
+  display: inline-flex; gap: 4px;
+  padding: 4px;
+  background: var(--glass-tint);
+  border-radius: var(--radius-md);
+}
+.qsds-segment button {
+  height: 32px; padding: 0 12px;
+  font: var(--weight-medium) 13px / 1 var(--font-sans);
+  color: var(--color-neutral-700);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--motion-fast);
+}
+.qsds-segment button:hover { color: var(--color-brand-default); }
+.qsds-segment button[aria-pressed="true"] {
+  background: var(--glass-2);
+  color: var(--color-brand-default);
+  box-shadow: 0 1px 4px rgba(0,0,0,.10);
+}
+
+/* accent swatches */
+.qsds-swatches {
+  display: flex; gap: 10px;
+  align-items: center;
+}
+.qsds-swatch {
+  width: 30px; height: 30px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: var(--motion-fast);
+  position: relative;
+}
+.qsds-swatch[data-accent="ink"]      { background: linear-gradient(135deg, #2E5C8A, #1B3A5C); }
+.qsds-swatch[data-accent="cinnabar"] { background: linear-gradient(135deg, #C25C50, #8A2F2F); }
+.qsds-swatch[data-accent="jade"]     { background: linear-gradient(135deg, #588168, #2F5640); }
+.qsds-swatch[data-accent="gold"]     { background: linear-gradient(135deg, #C49E48, #6B5022); }
+.qsds-swatch[data-accent="graphite"] { background: linear-gradient(135deg, #6E624F, #352D24); }
+.qsds-swatch:hover { transform: scale(1.10); }
+.qsds-swatch[aria-pressed="true"] {
+  border-color: var(--color-neutral-0);
+  box-shadow: 0 0 0 2px var(--color-brand-default);
+}
+
+/* trigger 按钮 */
+.qsds-settings-trigger {
+  position: relative;
+}

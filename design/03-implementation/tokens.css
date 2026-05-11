@@ -1,0 +1,199 @@
+/* ==========================================================================
+   QSDS · tokens.css
+   基础 token：默认 = data-accent="ink" + data-mode="light" + data-density="default"
+   ========================================================================== */
+
+:root,
+[data-mode="light"] {
+  /* —— 字体 ———————————————————————————— */
+  --font-brush:   'Ma Shan Zheng', 'STKaiti', cursive;
+  --font-display: 'ZCOOL XiaoWei', 'Source Han Serif SC', 'Noto Serif SC', serif;
+  --font-sans:    'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', Consolas, monospace;
+
+  --text-xs:   12px;
+  --text-sm:   13px;
+  --text-base: 17px;
+  --text-md:   18px;
+  --text-lg:   22px;
+  --text-xl:   28px;
+  --text-2xl:  36px;
+  --text-display: 48px;
+
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 700;
+
+  --leading-tight:  1.2;
+  --leading-normal: 1.6;
+  --leading-loose:  1.8;
+
+  /* —— 间距（4 基线） ———————————————————— */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  22px;
+  --space-6:  28px;
+  --space-7:  36px;
+  --space-8:  44px;
+  --space-9:  56px;
+  --space-10: 72px;
+  --space-11: 96px;
+  --space-12: 128px;
+
+  /* —— 圆角 ———————————————————————————— */
+  --radius-none: 0;
+  --radius-sm:  6px;
+  --radius-md:  14px;
+  --radius-lg:  18px;
+  --radius-xl:  26px;
+  --radius-pill: 999px;
+
+  /* —— 中性灰阶（暖墨基） ———————————————— */
+  --color-neutral-0:   #FFFBF0;   /* 暖白纸 */
+  --color-neutral-50:  #F8F2E0;
+  --color-neutral-100: #F0E8D2;
+  --color-neutral-200: #E5DCC7;
+  --color-neutral-300: #C5BBA8;
+  --color-neutral-400: #9C9080;
+  --color-neutral-500: #6F6452;
+  --color-neutral-600: #56493A;
+  --color-neutral-700: #3D3327;
+  --color-neutral-800: #2A2218;
+  --color-neutral-900: #1F1A14;
+  --color-neutral-950: #100D0A;
+
+  /* —— accent: ink（墨青）默认 50~900 —————— */
+  --color-ink-50:  #E8EFF5;
+  --color-ink-100: #CFDDE8;
+  --color-ink-200: #A8C0D4;
+  --color-ink-300: #7EA0BF;
+  --color-ink-400: #5481A8;
+  --color-ink-500: #2E5C8A;
+  --color-ink-600: #244A72;
+  --color-ink-700: #1B3A5C;
+  --color-ink-800: #142A44;
+  --color-ink-900: #0E1F38;
+
+  /* —— 当前 brand（默认 = ink-700） —————— */
+  --color-brand-50:  var(--color-ink-50);
+  --color-brand-100: var(--color-ink-100);
+  --color-brand-200: var(--color-ink-200);
+  --color-brand-300: var(--color-ink-300);
+  --color-brand-400: var(--color-ink-400);
+  --color-brand-500: var(--color-ink-500);
+  --color-brand-600: var(--color-ink-600);
+  --color-brand-700: var(--color-ink-700);
+  --color-brand-800: var(--color-ink-800);
+  --color-brand-900: var(--color-ink-900);
+  --color-brand-default: var(--color-brand-700);
+  --color-brand-hover:   var(--color-brand-600);
+  --color-brand-active:  var(--color-brand-800);
+  --color-brand-on:      var(--color-neutral-0);
+  --color-brand-ring:    rgba(46, 92, 138, 0.18);
+
+  /* —— 状态色（与 accent 解耦，永不变） ——— */
+  /* success · 翠玉 jade */
+  --color-success-50:  #E5EFE9;
+  --color-success-100: #C9DCD2;
+  --color-success-200: #97BAA7;
+  --color-success-500: #4A6F5A;
+  --color-success-700: #2F5640;
+  /* warning · 鎏金 gold */
+  --color-warning-50:  #F4ECD8;
+  --color-warning-100: #E8D5A8;
+  --color-warning-200: #D4B870;
+  --color-warning-500: #B8923A;
+  --color-warning-700: #8C6E2A;
+  /* danger · 朱砂 cinnabar */
+  --color-danger-50:  #F5E0DC;
+  --color-danger-100: #EAC0B8;
+  --color-danger-200: #D89488;
+  --color-danger-500: #B14545;
+  --color-danger-700: #8A2F2F;
+  /* info · 青花 (= ink 中阶, 保险一致) */
+  --color-info-50:  #E8EFF5;
+  --color-info-100: #CFDDE8;
+  --color-info-500: #2E5C8A;
+  --color-info-700: #1B3A5C;
+
+  /* —— 页面背景 ———————————————————————— */
+  --bg-page:
+    linear-gradient(180deg, #F8F2E0 0%, #F2EBD3 38%, #E8EFF5 100%);
+  --bg-page-glow:
+    radial-gradient(60% 50% at 75% 12%, rgba(184,146,58,0.10), transparent 60%),
+    radial-gradient(45% 40% at 18% 92%, rgba(46,92,138,0.08), transparent 55%);
+  --paper-grain-opacity: 0.06;
+
+  /* —— 玻璃 ————————————————————————————— */
+  --glass-1: rgba(255, 251, 240, 0.55);
+  --glass-2: rgba(255, 251, 240, 0.72);
+  --glass-3: rgba(255, 251, 240, 0.42);
+  --glass-tint:  rgba(207, 221, 232, 0.45);
+  --glass-dark:  rgba(20, 48, 79, 0.78);
+  --glass-blur:    saturate(170%) blur(22px);
+  --glass-blur-lg: saturate(170%) blur(34px);
+  --glass-blur-sm: saturate(170%) blur(16px);
+  --glass-border:        1px solid rgba(255, 250, 235, 0.78);
+  --glass-border-strong: 1px solid rgba(255, 250, 235, 0.92);
+  --glass-shadow:
+    0 6px 24px rgba(14, 31, 56, 0.14),
+    inset 0 1px 0 rgba(255, 250, 235, 0.65);
+  --glass-shadow-lg:
+    0 14px 38px rgba(14, 31, 56, 0.18),
+    inset 0 1px 0 rgba(255, 250, 235, 0.65);
+
+  /* —— 阴影 ————————————————————————————— */
+  --shadow-sm: 0 2px 8px rgba(14, 31, 56, 0.08);
+  --shadow-md: 0 6px 18px rgba(14, 31, 56, 0.12);
+  --shadow-lg: 0 14px 38px rgba(14, 31, 56, 0.18);
+
+  /* —— 焦点环 / 描边 ————————————————————— */
+  --focus-ring: 0 0 0 4px var(--color-brand-ring);
+  --border-strong: 1px solid var(--color-neutral-300);
+  --border-subtle: 1px solid var(--color-neutral-200);
+
+  /* —— 动效 ————————————————————————————— */
+  --motion-fast: 120ms cubic-bezier(.2,.8,.2,1);
+  --motion-base: 200ms cubic-bezier(.2,.8,.2,1);
+  --motion-slow: 320ms cubic-bezier(.2,.8,.2,1);
+  --easing-out:  cubic-bezier(.2,.8,.2,1);
+  --easing-in-out: cubic-bezier(.4,0,.2,1);
+
+  /* —— 层级 ————————————————————————————— */
+  --z-base:     0;
+  --z-sticky:   100;
+  --z-dropdown: 1000;
+  --z-popover:  1100;
+  --z-modal:    1200;
+  --z-toast:    1300;
+  --z-tooltip:  1400;
+
+  /* —— 断点（仅供 JS 读取，CSS 用 @media） — */
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+  --bp-2xl: 1536px;
+
+  /* —— 容器 ————————————————————————————— */
+  --container-max: 1440px;
+  --container-pad: 24px;
+}
+
+/* ===================== 密度切换 ===================== */
+[data-density="compact"] {
+  --space-3: 8px;  --space-4: 12px;  --space-5: 16px;  --space-6: 22px;
+  --text-base: 15px; --text-md: 16px;
+  --container-pad: 16px;
+}
+[data-density="elder"] {
+  --space-3: 16px; --space-4: 22px;  --space-5: 28px;  --space-6: 36px;
+  --text-base: 20px; --text-md: 22px; --text-lg: 26px;
+  --container-pad: 32px;
+}
+
+/* tabular-nums 工具 */
+.tabular { font-variant-numeric: tabular-nums; }

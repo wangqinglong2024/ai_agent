@@ -1,0 +1,11 @@
+/* QSDS · 一键聚合入口 */
+
+@import url('./tokens.css');
+@import url('./themes.css');
+@import url('./parts/01-base.css');
+@import url('./parts/02-glass.css');
+@import url('./parts/03-topbar.css');
+@import url('./parts/04-buttons-forms.css');
+@import url('./parts/05-tags-table.css');
+@import url('./parts/06-modal-dropdown.css');
+@import url('./parts/07-theme-switcher.css');

@@ -1,0 +1,90 @@
+/* QSDS · parts/02-glass.css */
+
+.glass,
+.glass-strong,
+.glass-tint,
+.glass-bar,
+.glass-hoverable,
+.glass-dark {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: var(--glass-1);
+  -webkit-backdrop-filter: var(--glass-blur);
+          backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: background var(--motion-base), border-color var(--motion-base), box-shadow var(--motion-base);
+}
+
+.glass-strong {
+  background: var(--glass-2);
+  border: var(--glass-border-strong);
+  box-shadow: var(--glass-shadow-lg);
+  -webkit-backdrop-filter: var(--glass-blur-lg);
+          backdrop-filter: var(--glass-blur-lg);
+}
+
+.glass-tint { background: var(--glass-tint); }
+
+.glass-bar {
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5);
+}
+
+.glass-hoverable { cursor: pointer; }
+.glass-hoverable:hover {
+  background: var(--glass-2);
+  border: var(--glass-border-strong);
+  box-shadow: var(--glass-shadow-lg);
+  transform: translateY(-1px);
+}
+
+.glass-dark {
+  background: var(--glass-dark);
+  color: var(--color-neutral-0);
+  border: 1px solid rgba(255, 250, 235, 0.18);
+}
+
+/* 卡片复合（含 padding） */
+.card {
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-xl);
+}
+
+/* 顶部高光 */
+.glass::before,
+.glass-strong::before,
+.glass-tint::before,
+.glass-bar::before,
+.glass-hoverable::before,
+.glass-dark::before {
+  content: ''; position: absolute; left: 12%; right: 12%; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,250,235,0.7), transparent);
+  pointer-events: none;
+}
+
+/* —— 不支持 backdrop-filter 的回退 —— */
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+  .glass,
+  .glass-strong,
+  .glass-tint,
+  .glass-bar,
+  .glass-hoverable {
+    background: var(--color-neutral-50);
+  }
+  [data-mode="dark"] .glass,
+  [data-mode="dark"] .glass-strong,
+  [data-mode="dark"] .glass-tint,
+  [data-mode="dark"] .glass-bar,
+  [data-mode="dark"] .glass-hoverable {
+    background: var(--color-neutral-100);
+  }
+}
+
+/* —— 移动端弱化 blur 防止性能塌陷 —— */
+@media (max-width: 768px) {
+  .glass, .glass-strong, .glass-tint, .glass-bar, .glass-hoverable, .glass-dark {
+    -webkit-backdrop-filter: var(--glass-blur-sm);
+            backdrop-filter: var(--glass-blur-sm);
+  }
+}
