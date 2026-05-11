@@ -80,10 +80,26 @@ h3 { font-size: var(--text-md); }
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
 
-/* —— 容器 —— */
+/* —— 容器（流体全宽） —— */
 .container {
   position: relative; z-index: 1;
-  max-width: var(--container-max);
+  width: 100%;
+  max-width: var(--container-max, none);  /* 默认 none = 跟随浏览器全宽 */
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+/* 阅读窄栏：长文 / 表单中卡，按需用 */
+.container-narrow {
+  position: relative; z-index: 1;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+.container-form {
+  position: relative; z-index: 1;
+  width: 100%;
+  max-width: 640px;
   margin: 0 auto;
   padding: 0 var(--container-pad);
 }

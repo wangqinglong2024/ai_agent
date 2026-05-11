@@ -20,22 +20,26 @@
 
 ---
 
-## 12 阶段总览（执行顺序）
+## 12 阶段总览（执行顺序；③ = 一次性全局，➀ = 按模块循环）
 
-| 阶段码 | 名称 | 输出落盘 |
-|--------|------|---------|
-| S01 · R | 需求分析 | `docs/S01-requirements/` |
-| S02 · A | 技术架构 | `docs/S02-architecture/` |
-| S03 · P | 权限与角色 | `docs/S03-permissions/` |
-| S04 · D | 数据模型（按功能） | `docs/S04-data/<feature>/` |
-| S05 · L | 业务与接口（按功能） | `docs/S05-api/<feature>/` |
-| S06 · X | 体验定调（UX 调性） | `docs/S06-ux/` |
-| S07 · S | 设计系统（视觉与组件） | `docs/S07-design-system/` |
-| S08 · I | 信息架构（路由与页面清单） | `docs/S08-ia/` |
-| S09 · N | 页面交互（按页面） | `docs/S09-pages/<feature>/` |
-| S10 · H | HTML 原型 | `docs/S10-prototype/` |
-| S11 · V | 开发前一致性校验 + Story 拆分 + 编码上下文包 | `docs/S11-validation/<feature>/` |
-| S12 · E | 产品需求文档（PRD） | `docs/S12-prd/` |
+| 阶段码 | 名称 | 性质 | 输出落盘 |
+|--------|------|------|---------|
+| S01 · R | 需求分析 | ③ | `docs/S01-requirements/` |
+| S02 · A | 技术架构 | ③ | `docs/S02-architecture/` |
+| S03 · P | 权限与角色 | ③ | `docs/S03-permissions/` |
+| S04 · D | 数据模型 | ➀ 按功能 | `docs/S04-data/<feature>/` |
+| S05 · L | 业务与接口 | ➀ 按功能 | `docs/S05-api/<feature>/` |
+| S06 · X | 体验定调（UX 调性）| ③ · 可用 `design/` 跳过 | `docs/S06-ux/` |
+| S07 · S | 设计系统（视觉与组件）| ③ · 可用 `design/` 跳过 | `docs/S07-design-system/` |
+| S08 · I | 信息架构（路由与页面清单）| ③ | `docs/S08-ia/` |
+| S09 · N | 页面交互 | ➀ 按页面 | `docs/S09-pages/<feature>/` |
+| S10 · H | HTML 原型 | ➀ 按页面 / 批次 | `docs/S10-prototype/` |
+| S11 · E | 产品需求文档（PRD）| ③ 汇总 | `docs/S11-prd/` |
+| S12 · V | 开发前一致性校验 | ③ 最终（V01/V02/V03）| `docs/S12-validation/` |
+
+> 一次性全局：S01-S03、S06-S08、S11、S12。
+> 按模块循环：S04 · S05 · S09 · S10（同一模块 D→L→N→H 走完后再开下一模块，可多模块并行）。
+> 跳过机制：项目不需重出 UX/视觉时，直接将 `design/01-experience/` 内容复制到 `docs/S06-ux/`，将 `design/02-design-system/` 内容复制到 `docs/S07-design-system/`，即可跳过 S06、S07 三件套。
 
 ---
 
@@ -61,7 +65,7 @@
 任何阶段，AI 跳过 ② 直接出 ③ → 立刻打回重做。
 
 > 例外：H 阶段第一次出原型不需要"用户输入反馈"，直接按 `S10-H02` 出原型；后续迭代必须经 `S10-H01` 反馈表。
-> V 阶段不需澄清（其输入完全来自上游冻结产物），三份输出按 `S11-V01/V02/V03` 顺序串跑。
+> V 阶段不需澄清（其输入完全来自上游冻结产物），三份输出按 `S12-V01/V02/V03` 顺序串跑。
 
 ---
 
@@ -79,8 +83,8 @@
 | S08 · I | [S08-I01](./S08-I01-用户输入-页面方向.md) | [S08-I02](./S08-I02-AI澄清-信息架构提问.md) | [S08-I03](./S08-I03-AI输出-信息架构与页面清单.md) |
 | S09 · N | [S09-N01](./S09-N01-用户输入-页面描述.md) | [S09-N02](./S09-N02-AI澄清-交互提问.md) | [S09-N03](./S09-N03-AI输出-页面交互规范.md) |
 | S10 · H | [S10-H01](./S10-H01-用户输入-原型反馈.md) | — | [S10-H02](./S10-H02-AI输出-HTML原型规范.md) |
-| S11 · V | — | — | [S11-V01](./S11-V01-AI输出-一致性校验.md) · [S11-V02](./S11-V02-AI输出-Story拆分.md) · [S11-V03](./S11-V03-AI输出-编码上下文包.md) |
-| S12 · E | [S12-E01](./S12-E01-用户输入-产品背景.md) | [S12-E02](./S12-E02-AI澄清-PRD提问.md) | [S12-E03](./S12-E03-AI输出-产品需求文档.md) |
+| S11 · E | [S11-E01](./S11-E01-用户输入-产品背景.md) | [S11-E02](./S11-E02-AI澄清-PRD提问.md) | [S11-E03](./S11-E03-AI输出-产品需求文档.md) |
+| S12 · V | — | — | [S12-V01](./S12-V01-AI输出-上游链一致性.md) · [S12-V02](./S12-V02-AI输出-模块内闭环.md) · [S12-V03](./S12-V03-AI输出-PRD回链校验.md) |
 
 ---
 
@@ -99,7 +103,7 @@
 | S08 · I | `docs/S08-ia/` |
 | S09 · N | `docs/S09-pages/<feature>/` |
 | S10 · H | `docs/S10-prototype/` |
-| S11 · V | `docs/S11-validation/<feature>/` |
-| S12 · E | `docs/S12-prd/` |
+| S11 · E | `docs/S11-prd/` |
+| S12 · V | `docs/S12-validation/` |
 
 详见 [S00-04-文档目录规划](./S00-04-文档目录规划.md)。

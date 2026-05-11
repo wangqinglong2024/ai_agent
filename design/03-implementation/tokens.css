@@ -178,10 +178,17 @@
   --bp-xl: 1280px;
   --bp-2xl: 1536px;
 
-  /* —— 容器 ————————————————————————————— */
-  --container-max: 1440px;
-  --container-pad: 24px;
+  /* —— 容器（流体全宽：跟随浏览器宽度，不出现中间留白） ——————————— */
+  --container-max: none;     /* 不限宽 */
+  --container-pad: 24px;     /* 默认两侧 padding；下方按断点覆盖 */
 }
+
+/* —— 容器两侧 padding 的响应式阶梯 —————————————————————————————— */
+@media (min-width: 768px)  { :root { --container-pad: 28px; } }
+@media (min-width: 1024px) { :root { --container-pad: 36px; } }
+@media (min-width: 1280px) { :root { --container-pad: 48px; } }
+@media (min-width: 1536px) { :root { --container-pad: 64px; } }
+@media (min-width: 1920px) { :root { --container-pad: 96px; } }
 
 /* ===================== 密度切换 ===================== */
 [data-density="compact"] {
