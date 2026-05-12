@@ -2,7 +2,7 @@
 
 > **阶段**：H HTML 原型
 > **谁产出**：AI（前端原型工程师）
-> **落盘**：`docs/S10-prototype/`
+> **落盘**：`docs/C04-prototype/<feature-id>/`
 > **目的**：把 X/S/I/N 实化为可点开看的纯 HTML，零依赖、本地双击 `index.html` 就能跑。原型只承担"看效果 + 走通流程"，不承担生产工程化。
 
 ---
@@ -10,11 +10,11 @@
 ## 触发提示词（首版）
 
 ```
-请你扮演"前端原型工程师"，遵循 /prompt/S00-01、/prompt/S00-03、/prompt/S00-04，硬性遵守 docs/S06-ux/、docs/S07-design-system/、docs/S08-ia/、docs/S09-pages/。
-按 /prompt/S10-H02-AI输出-HTML原型规范.md 输出一整套零依赖 HTML 原型，
-落盘到 docs/S10-prototype/。
+请你扮演"前端原型工程师"，遵循 /prompt/S00-01、/prompt/S00-03、/prompt/S00-04，硬性遵守 docs/F03-ux/、docs/F04-design-system/、docs/C02-ia/<feature-id>/、docs/C03-pages/<feature-id>/。
+按 /prompt/C04-H02-AI输出-HTML原型规范.md 输出一整套零依赖 HTML 原型，
+落盘到 docs/C04-prototype/<feature-id>/。
 所有 token 直接以 :root CSS 变量呈现，与 docs/70 01-tokens 一字不差。
-所有页面引用 page-id 与 docs/S08-ia 02-pages 完全一致。
+所有页面引用 page-id 与 docs/C02-ia 02-pages 完全一致。
 P0 页面必须出 4 份独立状态文件（默认 / 加载 / 空 / 错误）。
 本期 mock 的接口数据放 mock-data.js。
 完成后同步 changelog.md。
@@ -25,7 +25,7 @@ P0 页面必须出 4 份独立状态文件（默认 / 加载 / 空 / 错误）�
 ## 输出目录
 
 ```
-docs/S10-prototype/
+docs/C04-prototype/<feature-id>/
   index.html              # 原型导航首页：列出所有页面 + 状态切换链接
   changelog.md            # 每次迭代追加一段
   styles.css              # 全部 token + 通用样式（≤ 1200 行）
@@ -73,7 +73,7 @@ docs/S10-prototype/
 
 - 顶部 HTML 注释列出：page-id、对应 R-ID、对应 API-ID、当前状态名、最后更新时间
 - 引入 `../styles.css`、`../app.js`
-- DOM 结构按 `docs/S09-pages/<feature-id>/<page-id>.md` §3 区块清单
+- DOM 结构按 `docs/C03-pages/<feature-id>/<page-id>.md` §3 区块清单
 - 每个 Block 加 `data-block="Block-1"` 便于反馈定位
 - 每个操作按钮加 `data-op="OP-1"` 便于反馈定位
 - 文案直接走 `docs/X 04-voice-tone` 对照表，不卖萌
@@ -128,7 +128,7 @@ window.MOCK = {
 - 已知不同点：<>
 
 ## v2 · YYYY-MM-DD · 反馈轮 1
-- 应反馈 docs/S10-prototype/_input/feedback-round1.md：
+- 应反馈 docs/C04-prototype/<feature-id>/_input/feedback-round1.md：
   - F-1 → pages/course-detail.html Block-1 主 CTA 改为粘性
   - F-2 → styles.css --color-brand-default 改为 brand-700
   - 全局：表格行高 40 → 36，已同步 docs/70 01-tokens.md
@@ -139,7 +139,7 @@ window.MOCK = {
 ## 输出质量自检
 
 - [ ] 双击 `index.html` 在浏览器能跑，无 404、无控制台报错？
-- [ ] 所有 page-id 与 `docs/S08-ia/02-pages.md` 一致？
+- [ ] 所有 page-id 与 `docs/C02-ia/<feature-id>/02-pages.md` 一致？
 - [ ] P0 页面 4 状态齐？
 - [ ] 颜色 / 字号 / 间距 / 圆角全用 CSS 变量？
 - [ ] 字体自托管（除非 X 允许 CDN）？

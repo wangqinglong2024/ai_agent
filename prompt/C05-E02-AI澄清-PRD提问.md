@@ -2,8 +2,8 @@
 
 > **阶段**：E 产品需求文档（PRD）
 > **谁产出**：AI（产品经理）
-> **何时产出**：收到 `S11-E01` 用户输入后第一轮回复，必为本格式。
-> **落盘**：`docs/S00-meta/questions/E-questions-round<N>.md`
+> **何时产出**：收到 `C05-E01` 用户输入后第一轮回复，必为本格式。
+> **落盘**：`docs/S00-meta/questions/E-<feature-id>-questions-round<N>.md`
 
 ---
 
@@ -42,11 +42,11 @@
 ## 输出文件骨架
 
 ```markdown
-<!-- TARGET-PATH: docs/S00-meta/questions/E-questions-round<N>.md -->
+<!-- TARGET-PATH: docs/S00-meta/questions/E-<feature-id>-questions-round<N>.md -->
 
 # E 阶段澄清提问 · 第 <N> 轮
 
-> **上游**：docs/S11-prd/_input/prd-context.md，以及 R / A / P / D / L / X / S / I / N / H / V 全部冻结产物
+> **上游**：docs/C05-prd/<feature-id>/_input/prd-context.md，以及 R / A / P / D / L / X / S / I / N / H / V 全部冻结产物
 > **本轮问题数**：阻断级 X / 优化级 Y
 > **回答方式**：每问下追加 `**答**：...`，未答 = 采纳推荐。
 > **回答完成后**：另存为 `E-questions-round<N>-resolved.md` 发回 AI 触发 PRD 输出。
@@ -63,7 +63,7 @@
   - C. 其他（请说明）
 - **推荐**：<>
 - **理由**：<一句话>
-- **影响范围**：<决定 docs/S11-prd/ 下哪个子文件 / 哪一章>
+- **影响范围**：<决定 docs/C05-prd/<feature-id>/ 下哪个子文件 / 哪一章>
 
 ### Q2. ...
 
@@ -88,7 +88,7 @@
 
 > 凡 E01 §4 中"是否已冻结"勾"否"的，本节列出阻断；除非补冻，否则禁止出 PRD 正文。
 
-- W1. <例：S04-data 未冻结 → `08-data-model-summary.md` 无法生成，请先冻结再来。>
+- W1. <例：C06-data 未冻结 → `08-data-model-summary.md` 无法生成，请先冻结再来。>
 ```
 
 ---
