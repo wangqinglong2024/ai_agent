@@ -46,6 +46,7 @@
 
 > **顺序**：A → P 必须先于 C 循环（C 阶段会引用架构与权限规范）；X → S 必须先于 C03/C04（页面交互与原型直接消费设计 Token）。
 > **跳过机制**：项目沿用既有 `design/` 时，把对应内容复制到 `docs/B03-ux/`、`docs/B04-design-system/` 即可省掉 X、S 三件套。
+> **运行时资产**：仓库若含 `design/03-implementation/`（QSDS 可运行 CSS / JS 包），**不**拷到 docs/；C04 原型在 `docs/C04-prototype/<feature>/vendor/qsds/` 下 vendor 一份，页面 `<link>` `app.css` + `<script>` `app.js` + `qsds.bootstrap()` 即可。详见 C04-H03 §硬约束 0。
 
 ---
 
