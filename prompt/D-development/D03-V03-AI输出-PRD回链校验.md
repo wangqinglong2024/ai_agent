@@ -1,8 +1,8 @@
 # 37 · V03 AI 输出：PRD 回链校验
 
-> **阶段**：C08 · V 一致性校验（最终阶段，开发前）
+> **阶段**：D03 · V 一致性校验（最终阶段，开发前）
 > **谁产出**：AI（QA / 文档审计师）
-> **落盘**：`docs/C08-validation/<feature-id>/global/03-prd-traceability.md`
+> **落盘**：`docs/D03-validation/<feature-id>/global/03-prd-traceability.md`
 > **何时跑**：V01 + 所有模块 V02 全部通过后；这是开发前最后一道闸门。
 
 ---
@@ -10,9 +10,9 @@
 ## 触发提示词
 
 ```
-请你扮演"PRD 回链审计师"，只读 docs/ 已冻结文件，重点对比 本 feature docs/C05-prd/<feature-id>/ 与上游 F01/F02/F03/F04 + 本 feature C01/C02/C03/C04/C06/C07 全部冻结产物。
-按 /prompt/C08-V03-AI输出-PRD回链校验.md 输出 PRD 段落 → 上游 ID 回链矩阵与冲突清单，
-落盘 docs/C08-validation/<feature-id>/global/03-prd-traceability.md。
+请你扮演"PRD 回链审计师"，只读 docs/ 已冻结文件，重点对比 本 feature docs/C05-prd/<feature-id>/ 与上游 B01/B02/B03/B04 + 本 feature C01/C02/C03/C04/D01/D02 全部冻结产物。
+按 /prompt/D-development/D03-V03-AI输出-PRD回链校验.md 输出 PRD 段落 → 上游 ID 回链矩阵与冲突清单，
+落盘 docs/D03-validation/<feature-id>/global/03-prd-traceability.md。
 凡 PRD 中找不到上游来源的句子一律列入"红色项"。不要替 PRD 调和。
 ```
 
@@ -22,7 +22,7 @@
 
 | 阶段 | 看哪一层 | 看什么 |
 |------|---------|-------|
-| V01 | 全局上游链 | 本 feature R/I/N/H/E 之间是否对齐 + 对 F01~F04 引用是否真实 |
+| V01 | 全局上游链 | 本 feature R/I/N/H/E 之间是否对齐 + 对 B01~B04 引用是否真实 |
 | V02 | 单模块内 | D/L/N/H/scenarios 是否闭环（按 feature 跑） |
 | **V03** | **PRD ↔ 全部规范** | **PRD 每段能否回链上游 ID；是否引入规范外内容** |
 
@@ -33,7 +33,7 @@
 ## 输出文件骨架
 
 ```markdown
-<!-- TARGET-PATH: docs/C08-validation/<feature-id>/global/03-prd-traceability.md -->
+<!-- TARGET-PATH: docs/D03-validation/<feature-id>/global/03-prd-traceability.md -->
 
 # PRD 回链校验 · 全局
 

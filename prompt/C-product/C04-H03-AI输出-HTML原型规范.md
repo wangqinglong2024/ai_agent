@@ -10,8 +10,8 @@
 ## 触发提示词（首版）
 
 ```
-请你扮演"前端原型工程师"，遵循 /prompt/S00-01、/prompt/S00-03、/prompt/S00-04，硬性遵守 docs/F03-ux/、docs/F04-design-system/、docs/C02-ia/<feature-id>/、docs/C03-pages/<feature-id>/。
-按 /prompt/C04-H02-AI输出-HTML原型规范.md 输出一整套零依赖 HTML 原型，
+请你扮演"前端原型工程师"，遵循 /prompt/A-framework/A00-01、/prompt/A-framework/A00-03、/prompt/A-framework/A00-04，硬性遵守 docs/B03-ux/、docs/B04-design-system/、docs/C02-ia/<feature-id>/、docs/C03-pages/<feature-id>/。
+按 /prompt/C-product/C04-H03-AI输出-HTML原型规范.md 输出一整套零依赖 HTML 原型，
 落盘到 docs/C04-prototype/<feature-id>/。
 所有 token 直接以 :root CSS 变量呈现，与 docs/70 01-tokens 一字不差。
 所有页面引用 page-id 与 docs/C02-ia 02-pages 完全一致。

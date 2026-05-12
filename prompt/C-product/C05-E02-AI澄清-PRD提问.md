@@ -3,13 +3,13 @@
 > **阶段**：E 产品需求文档（PRD）
 > **谁产出**：AI（产品经理）
 > **何时产出**：收到 `C05-E01` 用户输入后第一轮回复，必为本格式。
-> **落盘**：`docs/S00-meta/questions/E-<feature-id>-questions-round<N>.md`
+> **落盘**：`docs/A00-meta/questions/E-<feature-id>-questions-round<N>.md`
 
 ---
 
 ## AI 必须遵守
 
-1. **只读**：E 用户输入 + R / A / P / D / L / X / S / I / N / H / V 全部冻结产物 + `S00-01`、`S00-03`、`S00-04` + 本模板。
+1. **只读**：E 用户输入 + R / A / P / D / L / X / S / I / N / H / V 全部冻结产物 + `A00-01`、`A00-03`、`A00-04` + 本模板。
 2. **只输出**：本模板的实例化 Markdown。
 3. 所有问题必须有：编号、可选项、推荐、推荐理由、影响范围。
 4. 阻断级 ≤ 12、优化级 ≤ 20。
@@ -42,7 +42,7 @@
 ## 输出文件骨架
 
 ```markdown
-<!-- TARGET-PATH: docs/S00-meta/questions/E-<feature-id>-questions-round<N>.md -->
+<!-- TARGET-PATH: docs/A00-meta/questions/E-<feature-id>-questions-round<N>.md -->
 
 # E 阶段澄清提问 · 第 <N> 轮
 
@@ -88,7 +88,7 @@
 
 > 凡 E01 §4 中"是否已冻结"勾"否"的，本节列出阻断；除非补冻，否则禁止出 PRD 正文。
 
-- W1. <例：C06-data 未冻结 → `08-data-model-summary.md` 无法生成，请先冻结再来。>
+- W1. <例：D01-data 未冻结 → `08-data-model-summary.md` 无法生成，请先冻结再来。>
 ```
 
 ---
