@@ -2,9 +2,9 @@
 
 # design/ · UX 替换包
 
-本目录是一份**预生成、可冻结、可复用**的 UX 设计包，等价于 `prompt/S06-X03 + S07-S03` 的最终产物。
+本目录是一份**预生成、可冻结、可复用**的 UX 设计包，等价于 `prompt/B-foundation/B03-X03 + B04-S03` 的最终产物。
 
-任何项目沿用本包时，**直接复制覆盖**即可省掉 S06、S07 的两组三件套（X01/X02/X03 + S01/S02/S03）。
+任何项目沿用本包时，**直接复制覆盖**即可省掉 B03、B04 的两组三件套（X01/X02/X03 + S01/S02/S03）。
 
 ---
 
@@ -12,11 +12,11 @@
 
 | 本目录子目录 | 等价 prompt 阶段 | 等价 docs 落点 |
 |------|------|------|
-| [01-experience/](./01-experience/00-index.md) | S06 · X 体验定调 | `docs/S06-ux/` |
-| [02-design-system/](./02-design-system/00-index.md) | S07 · S 设计系统 | `docs/S07-design-system/` |
+| [01-experience/](./01-experience/00-index.md) | B03 · X 体验定调 | `docs/B03-ux/` |
+| [02-design-system/](./02-design-system/00-index.md) | B04 · S 设计系统 | `docs/B04-design-system/` |
 | [03-implementation/](./03-implementation/README.md) | （编码层）可运行 CSS / JS 资产 | 直接 `<link>` 引入 HTML 原型与前端工程 |
 
-> 文件命名、目录结构、内部 `<!-- TARGET-PATH -->` 标记均严格遵守 `prompt/S00-04-文档目录规划.md` 与 `S06-X03 / S07-S03` 输出契约。
+> 文件命名、目录结构、内部 `<!-- TARGET-PATH -->` 标记均严格遵守 `prompt/A-framework/A00-04-文档目录规划.md` 与 `B03-X03 / B04-S03` 输出契约。
 
 ---
 
@@ -26,10 +26,10 @@
 
 ```bash
 # 1) 复制体验定调
-cp -r design/01-experience/*  docs/S06-ux/
+cp -r design/01-experience/*  docs/B03-ux/
 
 # 2) 复制设计系统
-cp -r design/02-design-system/*  docs/S07-design-system/
+cp -r design/02-design-system/*  docs/B04-design-system/
 
 # 3) 工程层引入实现资产（HTML 原型 / 前端工程同源）
 #    在原型 / 前端入口 <head> 中引入：
@@ -39,11 +39,11 @@ cp -r design/02-design-system/*  docs/S07-design-system/
 ```
 
 完成后：
-- `docs/S06-ux/` 与 `docs/S07-design-system/` 视为**已冻结**；
-- `prompt/` 流程**跳过** S06、S07 的全部 6 个三件套；
-- 直接进入 S08（信息架构）继续后续阶段。
+- `docs/B03-ux/` 与 `docs/B04-design-system/` 视为**已冻结**；
+- `prompt/` 流程**跳过** B03、B04 的全部 6 个三件套；
+- B 层冻结后即可进入任何 feature 的 C 循环（C01-R 需求分析起步）。
 
-> 想保留 prompt 流程？那就**不用本包**——按 S06-X01 → X02 → X03、S07-S01 → S02 → S03 走完，最终落到 `docs/S06-ux/`、`docs/S07-design-system/`。
+> 想保留 prompt 流程？那就**不用本包**——按 B03-X01 → X02 → X03、B04-S01 → S02 → S03 走完，最终落到 `docs/B03-ux/`、`docs/B04-design-system/`。
 
 ---
 
@@ -51,7 +51,7 @@ cp -r design/02-design-system/*  docs/S07-design-system/
 
 | 用途 | 引用方式 |
 |------|---------|
-| HTML 原型（S10 阶段） | `<link>` `app.css` + `<script>` `app.js`；原型 markup 直接套用 `02-design-system/05-components/` 的 Anatomy |
+| HTML 原型（C04 阶段） | `<link>` `app.css` + `<script>` `app.js`；原型 markup 直接套用 `02-design-system/05-components/` 的 Anatomy |
 | 前端工程实际开发 | 同上；或在 `tailwind.config.js` 中读 `tokens.css` 的 CSS 变量；组件实现严格遵守 `02-design-system/05-components/` 中各组件的 5 状态 + 异常态契约与 a11y 验收点 |
 
 > 原型与前端工程**共用一套 token、一套组件契约**，避免"原型一个样、上线另一个样"。
@@ -93,5 +93,6 @@ cp -r design/02-design-system/*  docs/S07-design-system/
 
 ## 7. 版本
 
-- v1.1 (2026-05-11)：容器改为流体全宽，去掉 1440 上限；目录命名与 S06-X03 / S07-S03 模板对齐；README 重写为"替换包"说明。
+- v1.2 (2026-05-12)：与新框架 B-foundation/C-product/D-develop 命名对齐；`docs/S06-ux/` → `docs/B03-ux/`、`docs/S07-design-system/` → `docs/B04-design-system/`。
+- v1.1 (2026-05-11)：容器改为流体全宽，去掉 1440 上限；目录命名与 B03-X03 / B04-S03 模板对齐；README 重写为"替换包"说明。
 - v1.0 (2026-05-11)：从 `planning/prstory/` 蒸馏，去业务化 + 双模式 + 主题色切换。

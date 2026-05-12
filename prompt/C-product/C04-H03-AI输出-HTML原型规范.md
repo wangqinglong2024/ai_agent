@@ -10,13 +10,14 @@
 ## 触发提示词（首版）
 
 ```
-请你扮演"前端原型工程师"，遵循 /prompt/A-framework/A00-01、/prompt/A-framework/A00-03、/prompt/A-framework/A00-04，硬性遵守 docs/B03-ux/、docs/B04-design-system/、docs/C02-ia/<feature-id>/、docs/C03-pages/<feature-id>/。
+请你扮演「前端原型工程师」，遵循 /prompt/A-framework/A00-01、/prompt/A-framework/A00-03、/prompt/A-framework/A00-04，硬性遵守 docs/B02-permissions/、docs/B03-ux/、docs/B04-design-system/、docs/C02-ia/<feature-id>/、docs/C03-pages/<feature-id>/。
 按 /prompt/C-product/C04-H03-AI输出-HTML原型规范.md 输出一整套零依赖 HTML 原型，
 落盘到 docs/C04-prototype/<feature-id>/。
-所有 token 直接以 :root CSS 变量呈现，与 docs/70 01-tokens 一字不差。
-所有页面引用 page-id 与 docs/C02-ia 02-pages 完全一致。
-P0 页面必须出 4 份独立状态文件（默认 / 加载 / 空 / 错误）。
-本期 mock 的接口数据放 mock-data.js。
+所有 token 直接以 :root CSS 变量呈现，与 docs/B04-design-system/01-tokens.md 一字不差。
+所有页面引用 page-id 与 docs/C02-ia/<feature-id>/02-pages.md 完全一致。
+P0 页面必须出 4 份独立状态文件（默认 / 加载 / 空 / 错误）；独立项 forbidden 状态必须覆盖。
+本期 mock 的接口数据放 mock-data.js（OP-ID 为键）。
+严禁引用 docs/B01-architecture/、docs/D01-data/、docs/D02-api/、docs/D03-validation/（C 与 D 隔离）。
 完成后同步 changelog.md。
 ```
 
@@ -49,7 +50,7 @@ docs/C04-prototype/<feature-id>/
 
 1. **零外部依赖**：不引 CDN、不用框架、不用打包器。仅原生 HTML + CSS + 一份 vanilla JS。
 2. **字体自托管**（除非 X 显式允许 CDN）。
-3. **所有颜色/字号/间距/圆角/阴影必须用 CSS 变量**（与 `docs/70 01-tokens.md` 完全一致）。变量定义放 `styles.css :root` 与 `[data-theme=dark]`。
+3. **所有颜色/字号/间距/圆角/阴影必须用 CSS 变量**（与 `docs/B04-design-system/01-tokens.md` 完全一致）。变量定义放 `styles.css :root` 与 `[data-theme=dark]`。
 4. **不得发起真实网络请求**。所有数据从 `mock-data.js` 取。
 5. **每个 P0 页面必出 4 状态文件**：默认 / 加载 / 空 / 错误。可选状态：`<page-id>.dark.html`、`<page-id>.mobile.html`。
 6. **响应式**：最少在 375 / 768 / 1280 三档下视觉无破。
@@ -124,14 +125,14 @@ window.MOCK = {
 
 ## v1 · YYYY-MM-DD · 首版
 - 页面：home, course-list, course-detail, login, me（默认+4 状态）
-- token：以 docs/70 01-tokens v1 同步
+- token：以 docs/B04-design-system/01-tokens.md v1 同步
 - 已知不同点：<>
 
 ## v2 · YYYY-MM-DD · 反馈轮 1
 - 应反馈 docs/C04-prototype/<feature-id>/_input/feedback-round1.md：
   - F-1 → pages/course-detail.html Block-1 主 CTA 改为粘性
   - F-2 → styles.css --color-brand-default 改为 brand-700
-  - 全局：表格行高 40 → 36，已同步 docs/70 01-tokens.md
+  - 全局：表格行高 40 → 36，已同步 docs/B04-design-system/01-tokens.md
 ```
 
 ---
@@ -141,7 +142,8 @@ window.MOCK = {
 - [ ] 双击 `index.html` 在浏览器能跑，无 404、无控制台报错？
 - [ ] 所有 page-id 与 `docs/C02-ia/<feature-id>/02-pages.md` 一致？
 - [ ] P0 页面 4 状态齐？
-- [ ] 颜色 / 字号 / 间距 / 圆角全用 CSS 变量？
+- [ ] 颜色 / 字号 / 间距 / 圆角全用 CSS 变量（与 docs/B04-design-system/01-tokens.md 一致）？
+- [ ] 未出现 docs/B01-architecture/、docs/D01-data/、docs/D02-api/、docs/D03-validation/ 的任何引用？
 - [ ] 字体自托管（除非 X 允许 CDN）？
 - [ ] 焦点环可见？表单 `<label for>` 齐？
 - [ ] 移动端 375 下无横向滚动？

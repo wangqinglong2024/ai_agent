@@ -67,7 +67,7 @@
 
 - 默认中文；按需扩展英文（`en-US`），不做繁体（统一简体）。
 - 翻译来源：人工 + AI 双轨，由产品最终审定。
-- 术语表落盘：`docs/S00-meta/glossary.md`。
+- 术语表落盘：`docs/A00-meta/glossary.md`。
 - UI 字符串集中：`/i18n/zh-CN.json`、`/i18n/en-US.json`，不允许内联字符串。
 
 ---
