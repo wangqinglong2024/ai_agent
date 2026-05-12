@@ -1,5 +1,5 @@
 <!-- TARGET-PATH: _DRAFT-docs-tree-preview.md -->
-<!-- 临时演示文件 · 走完 prompt 流程后 docs/ 目录会长什么样；可在确认后删除。 -->
+<!-- 临时演示文件 · 走完 prompt 流程后 docs/ 目录会长什么样； -->
 
 # docs/ 目录预览 · 一次性 B + 3 个 feature 循环（C → D 全跑）
 
@@ -111,6 +111,13 @@ docs/
 │
 │ ─────────────────────────────────────────────  以下 per-feature ──────────────
 │
+│ 【per-feature 拆分约定】
+│   每个 C / D 阶段顶层文件夹下，按 feature 名（如 order-mgmt / user-center / reporting）
+│   建立同名子目录，每个 feature 自包含完整一份。不使用 Module01 / Module02 这种包裹层。
+│   下面以 order-mgmt 完整展开为例；user-center / reporting 同结构，文末仅以“…”略过。
+│   同一 feature 在 C01、C02、C03、C04、C05、D01、D02、D03 共 8 个顶层下同名出现 1 次，
+│   他们合起来才是该 feature 的“产品+开发全包”。
+│
 ├── C01-requirements/                        ← C01 R
 │   ├── order-mgmt/
 │   │   ├── 00-index.md
@@ -120,8 +127,13 @@ docs/
 │   │   │   └── exception-flow.md
 │   │   ├── 99-open-questions.md
 │   │   └── _input/draft.md
-│   ├── user-center/  …（同结构）
-│   └── reporting/    …（同结构）
+│   ├── user-center/                         ← 同结构（示例展开）
+│   │   ├── 00-index.md
+│   │   ├── baseline.md
+│   │   ├── flows/…
+│   │   ├── 99-open-questions.md
+│   │   └── _input/draft.md
+│   └── reporting/                           ← 同结构（略）
 │
 ├── C02-ia/                                  ← C02 I
 │   ├── _global-routes.md                    ← 全局路由表（3 个 feature 的 delta 累计）
@@ -190,14 +202,11 @@ docs/
 │   │   │   ├── P-order-001.md
 │   │   │   └── ...
 │   │   ├── 07-business-rules.md
-│   │   ├── 08-data-model-summary.md         ← 占位件，D01 冻结后回填
-│   │   ├── 09-api-summary.md                ← 占位件，D02 冻结后回填
-│   │   ├── 10-roles-permissions.md
-│   │   ├── 11-design-summary.md             ← 摘要 docs/B03-ux/ + docs/B04-design/design-system/
-│   │   ├── 12-tech-stack-summary.md         ← 占位件，仅链接 docs/B01-architecture/00-index.md
-│   │   ├── 13-known-issues.md
-│   │   ├── 14-roadmap.md
-│   │   ├── 15-changelog.md
+│   │   ├── 08-roles-permissions.md
+│   │   ├── 09-design-summary.md             ← 摘要 docs/B03-ux/ + docs/B04-design/design-system/
+│   │   ├── 10-known-issues.md
+│   │   ├── 11-roadmap.md
+│   │   ├── 12-changelog.md
 │   │   ├── 99-open-questions.md
 │   │   └── _input/prd-context.md
 │   ├── user-center/  …
@@ -262,7 +271,7 @@ docs/
 | **C03 用 OP-ID，D02 用 API-ID + 反向映射** | C03 markdown 不出现 `API-ID`；D02 `00-index.md` 含 `OP-ID → API-ID` 映射列 ✅ |
 | **D03 落盘统一无 `/global/`** | 三 feature 的 V01/V02/V03 都直接位于 `docs/D03-validation/<feature-id>/` ✅ |
 | **全局索引一致** | `_global-routes.md`、`_global-index.md`、`_glossary.md` 三处累计增订，无重复定义 ✅ |
-| **占位件可识别** | C05 `08 / 09 / 12` 文件首行注明"占位件，待 D0x 冻结后回填" ✅ |
+| **PRD 不含开发域内容** | C05 子文件不出现表结构 / 接口文档 / 技术栈详情；那些都在 D01 / D02 / B01 ✅ |
 | **token 不漂移** | feature.css 中 grep 不到 hex / px 硬编码，也不重定义任何 `--*` token ✅ |
 
 ---

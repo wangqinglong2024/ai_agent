@@ -89,7 +89,7 @@
 
 > 凡 E01 §4 中"是否已冻结"勾"否"的，本节列出阻断；除非补冻，否则禁止出 PRD 正文。
 
-- W1. <例：D01-data 未冻结 → `08-data-model-summary.md` 无法生成，请先冻结再来。>
+- W1. <例：B02-permissions 未冻结 → `08-roles-permissions.md` 无法生成，请先冻结再来。>
 ```
 
 ---

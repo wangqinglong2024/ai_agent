@@ -54,12 +54,9 @@
 | 05-user-journeys | R 主流程 + 异常流 | | |
 | 06-page-specs | 本 feature C02 02-pages × N × H | | |
 | 07-business-rules | D 状态机 / 校验 + L 错误码 | | |
-| 08-data-model-summary | D 全部 entities | | |
-| 09-api-summary | L 全部 endpoints | | |
-| 10-roles-permissions | P 03-authz × 各 L 接口 | | |
-| 11-design-summary | X + S 摘要 | | |
-| 12-tech-stack-summary | A 01/02/06 | | |
-| 13-known-issues | V01/V02 报告 + 历史 changelog | | |
+| 08-roles-permissions | P 03-authz × 各 L 接口 | | |
+| 09-design-summary | X + S 摘要 | | |
+| 10-known-issues | V01/V02 报告 + 历史 changelog | | |
 
 ---
 
@@ -88,7 +85,7 @@
 | 桶 | 来源 | PRD 体现位置 | 是否完整 |
 |----|------|------------|---------|
 | ① 已实现 | E01 §3 ① | 04 模块清单 + 06 页面规格 | |
-| ② 已规划未实现 | E01 §3 ② | 14-roadmap.md | |
+| ② 已规划未实现 | E01 §3 ② | 11-roadmap.md | |
 | ③ 已废弃 | E01 §3 ③ | 不出现 | |
 
 > ②/③ 误入正文 → 阻断。
