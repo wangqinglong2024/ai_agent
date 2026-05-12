@@ -41,12 +41,11 @@
 |--------|------|------|---------|------|
 | **B01 · A** | 技术架构 | 架构师 | `docs/B01-architecture/` | 选栈、目录、DB/API/编码规范 |
 | **B02 · P** | 权限与角色 | 安全/权限工程师 | `docs/B02-permissions/` | 角色枚举、认证、授权机制 |
-| **B03 · X** | 体验定调（UX 调性）| 体验总监 | `docs/B03-ux/` | 可复制 `design/01-experience/` 跳过三件套 |
-| **B04 · S** | 设计系统（视觉与组件）| UI 设计师 | `docs/B04-design-system/` | 可复制 `design/02-design-system/` 跳过三件套 |
+| **B03 · X** | 体验定调（UX 调性）| 体验总监 | `docs/B03-ux/` | — |
+| **B04 · S** | 设计系统 + 原型样式包 | UI 设计师 | `docs/B04-design/` | 产出 `design-system/`（规范）+ `prototype-style/`（可运行 CSS/JS 资产） |
 
 > **顺序**：A → P 必须先于 C 循环（C 阶段会引用架构与权限规范）；X → S 必须先于 C03/C04（页面交互与原型直接消费设计 Token）。
-> **跳过机制**：项目沿用既有 `design/` 时，把对应内容复制到 `docs/B03-ux/`、`docs/B04-design-system/` 即可省掉 X、S 三件套。
-> **运行时资产**：仓库若含 `design/03-implementation/`（QSDS 可运行 CSS / JS 包），**不**拷到 docs/；C04 原型在 `docs/C04-prototype/<feature>/vendor/qsds/` 下 vendor 一份，页面 `<link>` `app.css` + `<script>` `app.js` + `qsds.bootstrap()` 即可。详见 C04-H03 §硬约束 0。
+> **B04 双产出**：`docs/B04-design/design-system/` 是给前端工程实现 React 组件的 markdown 规范；`docs/B04-design/prototype-style/` 是 C04 HTML 原型直接 vendor 引用的可运行 CSS / JS 资产，两者共享同一套 token，确保「原型一个样、上线一个样」。
 
 ---
 
@@ -144,7 +143,7 @@ B01 · A  →  B02 · P  →  B03 · X  →  B04 · S          ← 一次性定�
 | B01 · A | `docs/B01-architecture/` |
 | B02 · P | `docs/B02-permissions/` |
 | B03 · X | `docs/B03-ux/` |
-| B04 · S | `docs/B04-design-system/` |
+| B04 · S | `docs/B04-design/` |
 | C01 · R | `docs/C01-requirements/<feature>/` |
 | C02 · I | `docs/C02-ia/<feature>/` |
 | C03 · N | `docs/C03-pages/<feature>/` |

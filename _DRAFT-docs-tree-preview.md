@@ -3,8 +3,7 @@
 
 # docs/ 目录预览 · 一次性 B + 3 个 feature 循环（C → D 全跑）
 
-> 假设：仓库存在 `design/01-experience/`、`design/02-design-system/`、`design/03-implementation/`，
-> 因此 B03 / B04 三件套全部跳过（直接 cp），03-implementation 在 C04 阶段以 vendor 形式被引用。
+> 假设：完全按 `prompt/` 默认流程跑，所有 B / C / D 阶段均由 AI 三件套生成，无任何外部预生成包介入。
 > 三个 feature：`order-mgmt`（订单管理）、`user-center`（用户中心）、`reporting`（报表）。
 
 ---
@@ -15,8 +14,9 @@
 [一次性 · 项目级]
   B01 A → 写 docs/B01-architecture/
   B02 P → 写 docs/B02-permissions/
-  B03 X → cp design/01-experience/* → docs/B03-ux/   （跳过三件套）
-  B04 S → cp design/02-design-system/* → docs/B04-design-system/  （跳过三件套）
+  B03 X → 写 docs/B03-ux/
+  B04 S → 写 docs/B04-design/design-system/   （markdown 规范，给前端实现 React）
+        + 写 docs/B04-design/prototype-style/  （可运行 CSS / JS 资产，C04 vendor 引用）
   G-A / G-P / G-X / G-S 全 ✅
 
 [feature 1 = order-mgmt]
@@ -33,11 +33,14 @@
 
 ```
 docs/
-├── A00-meta/                                ← A 阶段元数据（术语/问答归档）
+├── A00-meta/                                ← A 阶段元数据（术语 / 问答归档）
 │   ├── glossary.md
+│   ├── changelog.md
 │   └── questions/
 │       ├── B01-A-questions-round1-resolved.md
 │       ├── B02-P-questions-round1-resolved.md
+│       ├── B03-X-questions-round1-resolved.md
+│       ├── B04-S-questions-round1-resolved.md
 │       ├── R-order-mgmt-questions-round1-resolved.md
 │       ├── R-user-center-questions-round1-resolved.md
 │       ├── R-reporting-questions-round1-resolved.md
@@ -47,39 +50,64 @@ docs/
 ├── B01-architecture/                        ← B01 A 项目级（一次性）
 │   ├── 00-index.md
 │   ├── 01-tech-stack.md
-│   ├── 02-directory.md
-│   ├── 03-db-conventions.md
+│   ├── 02-project-structure.md
+│   ├── 03-database.md
 │   ├── 04-api-conventions.md
-│   ├── 05-coding-conventions.md
-│   └── 99-open-questions.md
+│   ├── 05-coding-standards.md
+│   ├── 06-deploy-env.md
+│   ├── 07-i18n-responsive.md
+│   ├── 99-open-questions.md
+│   └── _input/preferences.md
 │
 ├── B02-permissions/                         ← B02 P 项目级（一次性）
 │   ├── 00-index.md
 │   ├── 01-roles.md
-│   ├── 02-auth.md
-│   ├── 03-authorization.md
-│   └── 99-open-questions.md
+│   ├── 02-auth-flow.md
+│   ├── 03-authz-mechanism.md
+│   ├── 04-user-data-model.md
+│   ├── 05-registration.md
+│   ├── 99-open-questions.md
+│   └── _input/roles-input.md
 │
-├── B03-ux/                                  ← B03 X · 由 design/01-experience/ cp 而来
+├── B03-ux/                                  ← B03 X 项目级（一次性）
 │   ├── 00-index.md
 │   ├── 01-direction.md
 │   ├── 02-references.md
 │   ├── 03-anti-examples.md
 │   ├── 04-voice-tone.md
 │   ├── 05-moodboard.md
-│   └── 06-experience-principles.md
+│   ├── 06-experience-principles.md
+│   ├── 99-open-questions.md
+│   └── _input/style-input.md
 │
-├── B04-design-system/                       ← B04 S · 由 design/02-design-system/ cp 而来
-│   ├── 00-index.md
-│   ├── 01-tokens.md
-│   ├── 02-layout.md
-│   ├── 03-navigation.md
-│   ├── 04-status-colors.md
-│   ├── 06-interactions.md
-│   ├── 07-responsive-dark.md
-│   └── 05-components/
-│       ├── 00-index.md
-│       ├── 01-buttons.md ... 12-decorations.md
+├── B04-design/                              ← B04 S 项目级（一次性，双子目录）
+│   ├── design-system/                       ← markdown 规范，给前端工程实现 React 组件库
+│   │   ├── 00-index.md
+│   │   ├── 01-tokens.md
+│   │   ├── 02-layout.md
+│   │   ├── 03-navigation.md
+│   │   ├── 04-status-colors.md
+│   │   ├── 05-components/
+│   │   │   ├── 00-index.md
+│   │   │   ├── 01-buttons.md ... 12-decorations.md
+│   │   ├── 06-interactions.md
+│   │   └── 07-responsive-dark.md
+│   ├── prototype-style/                     ← 可运行 CSS / JS 资产，C04 HTML 原型 vendor 引用
+│   │   ├── README.md
+│   │   ├── tokens.css                       ← 与 design-system/01-tokens.md 逐字同源
+│   │   ├── themes.css
+│   │   ├── app.css                          ← 总入口：@import tokens + themes + parts/*
+│   │   ├── app.js                           ← 暴露全局 proto.bootstrap() 与组件 API
+│   │   └── parts/
+│   │       ├── 01-base.css
+│   │       ├── 02-glass.css
+│   │       ├── 03-topbar.css
+│   │       ├── 04-buttons-forms.css
+│   │       ├── 05-tags-table.css
+│   │       ├── 06-modal-dropdown.css
+│   │       └── 07-theme-switcher.css
+│   ├── 99-open-questions.md
+│   └── _input/visual-input.md
 │
 │ ─────────────────────────────────────────────  以下 per-feature ──────────────
 │
@@ -103,7 +131,7 @@ docs/
 │   │   ├── 02-pages.md                      ← 页面清单（page-id × R-ID）
 │   │   ├── 03-navigation-impact.md          ← 对全局菜单的影响
 │   │   ├── 04-coverage-matrix.md            ← R-ID × page-id 矩阵
-│   │   ├── 05-error-pages.md                ← 401/403/404/500/maintenance
+│   │   ├── 05-error-pages.md                ← 401 / 403 / 404 / 500 / maintenance
 │   │   ├── 99-open-questions.md
 │   │   └── _input/page-direction.md
 │   ├── user-center/  …
@@ -121,18 +149,18 @@ docs/
 │   ├── user-center/  …
 │   └── reporting/    …
 │
-├── C04-prototype/                           ← C04 H · 备份依赖模式（vendor design/03-implementation/）
+├── C04-prototype/                           ← C04 H · vendor 自 docs/B04-design/prototype-style/
 │   ├── order-mgmt/
 │   │   ├── index.html                       ← 评审入口
 │   │   ├── changelog.md
-│   │   ├── feature.css                      ← 仅本 feature 页面级样式（贴 vendor 变量）
-│   │   ├── feature.js                       ← 仅本 feature 交互（调 qsds.* API）
+│   │   ├── feature.css                      ← 仅本 feature 页面级样式（贴 vendor 变量，禁止重定义 token）
+│   │   ├── feature.js                       ← 仅本 feature 交互（调 vendor 暴露的 proto.* API）
 │   │   ├── mock-data.js                     ← OP-ID 为键的 mock fixture
-│   │   ├── vendor/qsds/                     ← 全量拷自 design/03-implementation/
-│   │   │   ├── app.css
-│   │   │   ├── app.js
+│   │   ├── vendor/proto-style/              ← 全量拷自 docs/B04-design/prototype-style/，不修改
 │   │   │   ├── tokens.css
 │   │   │   ├── themes.css
+│   │   │   ├── app.css
+│   │   │   ├── app.js
 │   │   │   └── parts/
 │   │   ├── pages/
 │   │   │   ├── P-order-001.html
@@ -165,8 +193,8 @@ docs/
 │   │   ├── 08-data-model-summary.md         ← 占位件，D01 冻结后回填
 │   │   ├── 09-api-summary.md                ← 占位件，D02 冻结后回填
 │   │   ├── 10-roles-permissions.md
-│   │   ├── 11-design-summary.md
-│   │   ├── 12-tech-stack-summary.md         ← 仅链接 docs/B01-architecture/00-index.md
+│   │   ├── 11-design-summary.md             ← 摘要 docs/B03-ux/ + docs/B04-design/design-system/
+│   │   ├── 12-tech-stack-summary.md         ← 占位件，仅链接 docs/B01-architecture/00-index.md
 │   │   ├── 13-known-issues.md
 │   │   ├── 14-roadmap.md
 │   │   ├── 15-changelog.md
@@ -178,16 +206,15 @@ docs/
 ├── D01-data/                                ← D01 D
 │   ├── order-mgmt/
 │   │   ├── 00-index.md
-│   │   ├── 01-er-diagram.md
-│   │   ├── 02-entities/
-│   │   │   ├── orders.md
-│   │   │   ├── order-items.md
-│   │   │   └── ...
-│   │   ├── 03-enums.md
-│   │   ├── 04-state-machines.md
+│   │   ├── 01-tables.md
+│   │   ├── 02-enums.md
+│   │   ├── 03-relations.md
+│   │   ├── 04-state-machine.md
 │   │   ├── 05-validations.md
-│   │   ├── 06-migrations.md
-│   │   └── 99-open-questions.md
+│   │   ├── 06-calculations.md
+│   │   ├── 07-seed-data.md
+│   │   ├── 99-open-questions.md
+│   │   └── _input/data-rules.md
 │   ├── user-center/  …
 │   └── reporting/    …
 │
@@ -200,8 +227,9 @@ docs/
 │   │   │   ├── get-orders.md
 │   │   │   └── ...
 │   │   ├── 03-error-codes.md
-│   │   ├── 04-events.md
-│   │   └── 99-open-questions.md
+│   │   ├── 04-concurrency.md
+│   │   ├── 99-open-questions.md
+│   │   └── _input/operations.md
 │   ├── user-center/  …
 │   └── reporting/    …
 │
@@ -226,15 +254,16 @@ docs/
 
 | 检查 | 验证方式 |
 |------|---------|
-| **B01/B02 项目级，仅一份** | 顶层无 `<feature-id>/` 子目录 ✅ |
-| **B03/B04 直接 cp design 而来** | 文件结构与 `design/01-experience/`、`design/02-design-system/` 一一对应 ✅ |
-| **`design/03-implementation/` 不进 docs/** | 仅在每 feature `C04-prototype/<feature>/vendor/qsds/` 出现拷贝 ✅ |
+| **B01 / B02 / B03 / B04 项目级，仅一份** | 顶层无 `<feature-id>/` 子目录 ✅ |
+| **B04 双子目录** | `docs/B04-design/design-system/`（markdown 规范）+ `docs/B04-design/prototype-style/`（可运行资产）共存且 token 同源 ✅ |
+| **C04 vendor 唯一来源** | 每 feature `vendor/proto-style/` 与 `docs/B04-design/prototype-style/` 字节级一致 ✅ |
 | **C 与 D 隔离** | C01–C05 的 markdown 中 grep 不到 `docs/B01-architecture/`、`docs/D01-data/`、`docs/D02-api/`、`docs/D03-validation/` ✅ |
 | **B01 不依赖 feature** | B01 文件中 grep 不到任何 `<feature-id>` ✅ |
 | **C03 用 OP-ID，D02 用 API-ID + 反向映射** | C03 markdown 不出现 `API-ID`；D02 `00-index.md` 含 `OP-ID → API-ID` 映射列 ✅ |
 | **D03 落盘统一无 `/global/`** | 三 feature 的 V01/V02/V03 都直接位于 `docs/D03-validation/<feature-id>/` ✅ |
 | **全局索引一致** | `_global-routes.md`、`_global-index.md`、`_glossary.md` 三处累计增订，无重复定义 ✅ |
-| **占位件可识别** | C05 `08/09/12` 文件首行注明"占位件，待 D0x 冻结后回填" ✅ |
+| **占位件可识别** | C05 `08 / 09 / 12` 文件首行注明"占位件，待 D0x 冻结后回填" ✅ |
+| **token 不漂移** | feature.css 中 grep 不到 hex / px 硬编码，也不重定义任何 `--*` token ✅ |
 
 ---
 
@@ -242,7 +271,8 @@ docs/
 
 1. **可裁剪**：只想要"产品设计包"时，删 `D01-data/` `D02-api/` `D03-validation/` 三个顶层目录即可。
 2. **可并行**：3 个 feature 可在 B 冻结后并行跑各自 C → D，互不干扰；只在 `_global-routes.md` 与 `C05-prd/_global-index.md` 处有累计写入。
-3. **可独立交付**：每个 feature 的 7 个目录（C01~C05+D01+D02+D03）与 vendor 完全自包含；任意 feature 删除/归档不影响其它。
+3. **可独立交付**：每个 feature 的 7 个目录（C01~C05+D01+D02+D03）与 vendor 完全自包含；任意 feature 删除 / 归档不影响其它。
 4. **可追溯**：任何一行实现 → API-ID（D02）→ OP-ID（C03）→ R-ID（C01）→ 业务规则（C05/07）链路闭合；V01+V02+V03 全绿才放行。
+5. **设计-原型-上线一致**：`B04-design/design-system/` 与 `B04-design/prototype-style/` 共享 token 源；C04 原型 vendor 引用 `prototype-style/`，前端工程实现引用 `design-system/`，两条路径同源不漂移。
 
 > 删除本文件命令：`rm /opt/projects/ai_agent/_DRAFT-docs-tree-preview.md`
