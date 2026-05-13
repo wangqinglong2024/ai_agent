@@ -160,7 +160,7 @@ window.MOCK = {
 - [ ] `vendor/proto-style/` 与 `docs/B04-design/prototype-style/` 内容**字节级一致**？
 - [ ] feature.css / feature.js 中无任何 token 重定义、无任何 hex / px 硬编码？
 - [ ] 双击 `index.html` 在浏览器能跑，无 404、无控制台报错？
-- [ ] 所有 page-id 与 `docs/C02-ia/<feature-id>/02-pages.md` 一致？
+- [ ] 所有 page-id 与 `docs/C02-ia/<feature-id>/04-pages.md` 一致？
 - [ ] P0 页面 4 状态齐？
 - [ ] 颜色 / 字号 / 间距 / 圆角全用 CSS 变量（与 docs/B04-design/design-system/01-tokens.md 一致）？
 - [ ] 未出现 docs/B01-architecture/、docs/D01-data/、docs/D02-api/、docs/D03-validation/ 的任何引用？

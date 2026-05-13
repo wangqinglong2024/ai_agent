@@ -50,10 +50,10 @@
 | 01-overview | 本 feature R 基线 §1 / E01 §1 | ✅ | — |
 | 02-glossary | E01 §6 + 本 feature R 基线术语 | ✅ | — |
 | 03-personas | P 01-roles + R 用户场景 | ✅ | — |
-| 04-feature-catalog | R R-ID 全集 | ❓ | 缺 R-007 |
-| 05-user-journeys | R 主流程 + 异常流 | | |
-| 06-page-specs | 本 feature C02 02-pages × N × H | | |
-| 07-business-rules | D 状态机 / 校验 + L 错误码 | | |
+| 04-feature-catalog | C02 01-feature-catalog（模块 M-ID） | ❓ | 缺 M-007 |
+| 05-user-journeys | C02 02-flows（主流程 + 异常） + R 场景 | | |
+| 06-page-specs | C02 04-pages × N × H × D02 _global-routes（URL）| | |
+| 07-business-rules | C02 03-state-machines + D 03-business-rules + L 04-error-codes | | |
 | 08-roles-permissions | P 03-authz × 各 L 接口 | | |
 | 09-design-summary | X + S 摘要 | | |
 | 10-known-issues | V01/V02 报告 + 历史 changelog | | |
@@ -104,7 +104,7 @@
 ## 6. 必须修复清单（阻断 V03 通过 = 阻断进入开发）
 
 - [ ] FIX-1：04-feature-catalog.md 出现"AI 自动审稿"无上游 → 删除或回 R 阶段补 R-ID
-- [ ] FIX-2：07-business-rules.md §3.2 与 D state-machine 冲突 → 回 D 重定状态机或改 PRD
+- [ ] FIX-2：07-business-rules.md §3.2 与 C02 03-state-machines 冲突 → 回 C02 重定状态机或改 PRD
 
 ## 7. 建议优化（不阻断）
 
