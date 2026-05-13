@@ -1,4 +1,4 @@
-<!-- TARGET-PATH: design/01-experience/00-index.md -->
+<!-- TARGET-PATH: design/01-ux/00-index.md -->
 
 # 体验定调 · 索引（默认规范）
 

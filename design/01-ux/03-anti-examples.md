@@ -1,4 +1,4 @@
-<!-- TARGET-PATH: design/01-experience/03-anti-examples.md -->
+<!-- TARGET-PATH: design/01-ux/03-anti-examples.md -->
 
 # 反例清单
 

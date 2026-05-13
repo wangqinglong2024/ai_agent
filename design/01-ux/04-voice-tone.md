@@ -1,4 +1,4 @@
-<!-- TARGET-PATH: design/01-experience/04-voice-tone.md -->
+<!-- TARGET-PATH: design/01-ux/04-voice-tone.md -->
 
 # 文案语气
 

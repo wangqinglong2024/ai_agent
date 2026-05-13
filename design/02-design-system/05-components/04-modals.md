@@ -29,7 +29,7 @@
 - 进入：translateY(100% → 0)，250ms
 
 > 双端共用一份 DOM；通过 CSS `[data-mode-mobile] .modal-mask` 区分。
-> 实现细节：见 `design/03-implementation/app.js` `bindModals()` —— 触发时把 `.modal-mask` 移动到所在设备容器内（保 `position: fixed` 定界）。
+> 实现细节：见 `design/03-prototype-style/app.js` `bindModals()` —— 触发时把 `.modal-mask` 移动到所在设备容器内（保 `position: fixed` 定界）。
 
 ---
 

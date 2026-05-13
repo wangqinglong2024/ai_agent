@@ -1,11 +1,11 @@
-# 03-implementation · 可运行资产
+# 03-prototype-style · 可运行资产
 
 > 这是 QSDS（青花宋韵 Design System）的**可运行**实现层。HTML 原型直接 `<link>` / `<script>` 引入即可获得本设计系统的全部默认样式与运行时行为。
 
 ## 文件
 
 ```
-03-implementation/
+03-prototype-style/
 ├── README.md                ← 本文件
 ├── tokens.css               ← 基础 token（默认 ink + light + default 密度）
 ├── themes.css               ← 5 套 accent 覆盖 + 暗色覆盖 + 密度覆盖
@@ -37,14 +37,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./03-implementation/app.css">
+  <link rel="stylesheet" href="./03-prototype-style/app.css">
 </head>
 <body>
   <main class="container"> ... </main>
 
   <!-- 可选：Three.js（仅当页面用 FluidCanvas） -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="./03-implementation/app.js"></script>
+  <script src="./03-prototype-style/app.js"></script>
   <script>qsds.bootstrap();</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!-- TARGET-PATH: design/01-experience/02-references.md -->
+<!-- TARGET-PATH: design/01-ux/02-references.md -->
 
 # 参考清单
 

@@ -2,7 +2,7 @@
 
 # 设计 Token
 
-> 全部以 CSS 自定义属性形式呈现。运行时实现见 `design/03-implementation/tokens.css` + `themes.css`。
+> 全部以 CSS 自定义属性形式呈现。运行时实现见 `design/03-prototype-style/tokens.css` + `themes.css`。
 
 ---
 

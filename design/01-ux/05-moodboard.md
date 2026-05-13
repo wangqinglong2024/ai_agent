@@ -1,4 +1,4 @@
-<!-- TARGET-PATH: design/01-experience/05-moodboard.md -->
+<!-- TARGET-PATH: design/01-ux/05-moodboard.md -->
 
 # Moodboard（设计语言原料）
 

@@ -1,4 +1,4 @@
-<!-- TARGET-PATH: design/01-experience/01-direction.md -->
+<!-- TARGET-PATH: design/01-ux/01-direction.md -->
 
 # 一页纸定调
 

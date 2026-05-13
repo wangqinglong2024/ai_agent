@@ -84,7 +84,7 @@ qsds.mountFluid(canvasEl, {
 });
 ```
 
-> 注：实际实现里 CSS 变量需在 JS 中读取后转为 hex 数字传给 THREE。详见 `design/03-implementation/app.js`。
+> 注：实际实现里 CSS 变量需在 JS 中读取后转为 hex 数字传给 THREE。详见 `design/03-prototype-style/app.js`。
 
 ### 顶点位移公式（连绵正余弦）
 

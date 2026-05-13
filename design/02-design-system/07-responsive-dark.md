@@ -60,7 +60,7 @@ qsds.toggleMode();              // light ↔ dark
 
 ### 2.3 实现片段
 
-详细 CSS 在 `design/03-implementation/themes.css`。摘要：
+详细 CSS 在 `design/03-prototype-style/themes.css`。摘要：
 
 ```css
 :root, [data-mode="light"] {
@@ -184,7 +184,7 @@ qsds.listAccents();             // ['ink','cinnabar','jade','gold','graphite']
 └──────────────────────────┘
 ```
 
-参考实现见 `design/03-implementation/app.js` `mountSettingsPanel()`。
+参考实现见 `design/03-prototype-style/app.js` `mountSettingsPanel()`。
 
 ---
 

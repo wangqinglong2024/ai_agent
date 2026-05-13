@@ -1,4 +1,4 @@
-<!-- TARGET-PATH: design/01-experience/06-experience-principles.md -->
+<!-- TARGET-PATH: design/01-ux/06-experience-principles.md -->
 
 # 体验决策原则（6 条）
 
