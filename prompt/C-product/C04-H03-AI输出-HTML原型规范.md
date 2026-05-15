@@ -1,4 +1,4 @@
-# 34 · H03 AI 输出：HTML 原型规范
+# 28 · H03 AI 输出：HTML 原型规范
 
 > **阶段**：H HTML 原型
 > **谁产出**：AI（前端原型工程师）
@@ -23,8 +23,8 @@
 仅写本 feature 专属的 feature.css（贴 vendor 变量，禁止重定义 token）与 feature.js（调 vendor 暴露的 proto.* API）。
 
 P0 页面必须出 4 份独立状态文件（默认 / 加载 / 空 / 错误）；独立项 forbidden 状态必须覆盖。
-本期 mock 的接口数据放 mock-data.js（OP-ID 为键，与 docs/C03-pages/<feature-id>/<page-id>.md 一致）。
-严禁引用 docs/B01-architecture/、docs/D01-data/、docs/D02-api/、docs/D03-validation/（C 与 D 隔离）。
+本期 mock 的接口数据放 mock-data.js（OP-ID 为键，与 docs/C03-pages/<feature-id>/<page-id>.md 一致；字段名用业务语言，**不假设**任何后端字段）。
+本阶段属于产品设计阶段，**严禁**引用、读取或假设任何后续开发阶段产物（架构 / 数据规范 / 接口规范 / 校验规范），也禁止出现真实接口路径、SQL、表名、列名。
 完成后同步 changelog.md。
 ```
 
@@ -54,7 +54,8 @@ docs/C04-prototype/<feature-id>/
     <page-id>.forbidden.html
   assets/
     images/               # 占位图（字体 / 图标 / 运行时资产均走 vendor/proto-style/）
-  _input/feedback-vN.md
+  _input/round<N>.md          # H01 用户输入（首版 N=0，迭代 N=1,2,...）
+  _input/H-questions-round<N>.md  # H02 澄清
 ```
 
 ---
@@ -145,7 +146,7 @@ window.MOCK = {
 - 已知不同点：<>
 
 ## v2 · YYYY-MM-DD · 反馈轮 1
-- 应反馈 docs/C04-prototype/<feature-id>/_input/feedback-round1.md：
+- 应反馈 docs/C04-prototype/<feature-id>/_input/round1.md：
   - F-1 → pages/course-detail.html Block-1 主 CTA 改为粘性
   - F-2 → 涉及 token 变更：已回写 docs/B04-design/design-system/01-tokens.md 与 docs/B04-design/prototype-style/tokens.css，重新同步 vendor/
   - 全局：表格行高 40 → 36，已同步 docs/B04-design/design-system/01-tokens.md
@@ -163,7 +164,7 @@ window.MOCK = {
 - [ ] 所有 page-id 与 `docs/C02-ia/<feature-id>/04-pages.md` 一致？
 - [ ] P0 页面 4 状态齐？
 - [ ] 颜色 / 字号 / 间距 / 圆角全用 CSS 变量（与 docs/B04-design/design-system/01-tokens.md 一致）？
-- [ ] 未出现 docs/B01-architecture/、docs/D01-data/、docs/D02-api/、docs/D03-validation/ 的任何引用？
+- [ ] 全文未出现任何后续开发阶段产物路径 / 真实接口名 / SQL / 表名 / 列名 / 路由路径？
 - [ ] 字体自托管（除非 X 允许 CDN）？
 - [ ] mock-data.js 键都是 OP-ID（与 C03 页面一致）？
 - [ ] 焦点环可见？表单 `<label for>` 齐？
