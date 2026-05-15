@@ -56,7 +56,7 @@
 | **C01 · R** | 需求分析（feature 级） | 需求分析师 | `docs/C01-requirements/<feature>/` | feature 启动 |
 | **C02 · I** | 信息架构（功能清单 + 流程 + 状态机 + 页面清单）| 信息架构师 | `docs/C02-ia/<feature>/` | C01 冻结后 |
 | **C03 · N** | 页面交互 | 交互设计师 | `docs/C03-pages/<feature>/` | C02 冻结后 |
-| **C04 · H** | HTML 原型 | 原型工 | `docs/C04-prototype/<feature>/` | C03 冻结后；可多轮迭代 |
+| **C04 · H** | HTML 原型 | 原型工 | `docs/C04-prototype/<feature>/` | C03 冻结后；一次性出齐本 feature 全部 page-id |
 | **C05 · E** | 产品需求文档（PRD）| 产品经理 | `docs/C05-prd/<feature>/` | C04 稳定后 |
 | **D01 · D** | 数据模型 | 数据建模师 | `docs/D01-data/<feature>/` | C05 冻结后 |
 | **D02 · L** | 路由与接口 | 接口设计师 | `docs/D02-api/<feature>/` | D01 冻结后 |
@@ -126,7 +126,7 @@ B01 · A  →  B02 · P  →  B03 · X  →  B04 · S          ← 一次性定�
 | C01 · R | [C01-R01](../C-product/C01-R01-用户输入-需求初稿.md) | [C01-R02](../C-product/C01-R02-AI澄清-需求提问.md) | [C01-R03](../C-product/C01-R03-AI输出-需求基线.md) |
 | C02 · I | [C02-I01](../C-product/C02-I01-用户输入-信息架构方向.md) | [C02-I02](../C-product/C02-I02-AI澄清-信息架构提问.md) | [C02-I03](../C-product/C02-I03-AI输出-信息架构.md) |
 | C03 · N | [C03-N01](../C-product/C03-N01-用户输入-页面描述.md) | [C03-N02](../C-product/C03-N02-AI澄清-交互提问.md) | [C03-N03](../C-product/C03-N03-AI输出-页面交互规范.md) |
-| C04 · H | [C04-H01](../C-product/C04-H01-用户输入-原型反馈.md) | [C04-H02](../C-product/C04-H02-AI澄清-原型提问.md) | [C04-H03](../C-product/C04-H03-AI输出-HTML原型规范.md) |
+| C04 · H | [C04-H01](../C-product/C04-H01-用户输入-原型方向.md) | [C04-H02](../C-product/C04-H02-AI澄清-原型提问.md) | [C04-H03](../C-product/C04-H03-AI输出-HTML原型规范.md) |
 | C05 · E | [C05-E01](../C-product/C05-E01-用户输入-产品背景.md) | [C05-E02](../C-product/C05-E02-AI澄清-PRD提问.md) | [C05-E03](../C-product/C05-E03-AI输出-产品需求文档.md) |
 | D01 · D | [D01-D01](../D-develop/D01-D01-用户输入-数据规则.md) | [D01-D02](../D-develop/D01-D02-AI澄清-数据提问.md) | [D01-D03](../D-develop/D01-D03-AI输出-数据规范.md) |
 | D02 · L | [D02-L01](../D-develop/D02-L01-用户输入-操作逻辑.md) | [D02-L02](../D-develop/D02-L02-AI澄清-接口提问.md) | [D02-L03](../D-develop/D02-L03-AI输出-接口规范.md) |
