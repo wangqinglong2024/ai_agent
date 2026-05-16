@@ -54,7 +54,7 @@
 | 05-user-journeys | C02 02-flows（主流程 + 异常） + R 场景 | | |
 | 06-page-specs | C02 04-pages × N × H × D02 _global-routes（URL）| | |
 | 07-business-rules | C02 03-state-machines + D 03-business-rules + L 04-error-codes | | |
-| 08-roles-permissions | P 03-authz × 各 L 接口 | | |
+| 08-roles-permissions | P 02-authz × 各 L 接口 | | |
 | 09-design-summary | X + S 摘要 | | |
 | 10-known-issues | V01/V02 报告 + 历史 changelog | | |
 
