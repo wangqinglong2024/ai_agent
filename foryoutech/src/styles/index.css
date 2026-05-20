@@ -1,0 +1,368 @@
+/* ======================================================================
+ * ForYou Tech 全局样式体系
+ * Tailwind CSS v4 + 渐变网格毛玻璃 (Mesh Gradient Glassmorphism)
+ * 色系：科技青蓝 (cyan) + 天际蓝 (sky) + 琥珀金 (amber)
+ * 严禁紫色元素
+ * ====================================================================== */
+
+@import "tailwindcss";
+
+/* ── Tailwind v4 主题配置（替代 tailwind.config.js） ── */
+@theme {
+  /* 品牌色板 */
+  --color-brand-primary: #06b6d4;
+  --color-brand-secondary: #0ea5e9;
+  --color-brand-accent: #f59e0b;
+
+  /* 扩展动画时长 */
+  --animate-float-slow: float-slow 6s ease-in-out infinite;
+  --animate-float-medium: float-medium 4s ease-in-out infinite;
+  --animate-mesh-drift-1: mesh-drift-1 22s ease-in-out infinite;
+  --animate-mesh-drift-2: mesh-drift-2 25s ease-in-out infinite;
+  --animate-mesh-drift-3: mesh-drift-3 20s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.6s ease-out forwards;
+  --animate-slide-up: slide-up 0.6s ease-out forwards;
+}
+
+/* ── CSS 自定义属性：Light / Dark 双模主题变量 ── */
+:root {
+  /* 页面基底背景色 - 暖白底，远离冷灰 */
+  --page-bg: #fffbf7;
+
+  /* 渐变网格 Blob 颜色 - Light 模式（暖玫瑰 + 天蓝 + 琥珀金） */
+  --mesh-color-1: #fda4af;   /* rose-300 暖粉 */
+  --mesh-color-2: #7dd3fc;   /* sky-300 天蓝 */
+  --mesh-color-3: #fde68a;   /* amber-200 琥珀 */
+  --mesh-opacity-1: 0.65;
+  --mesh-opacity-2: 0.55;
+  --mesh-opacity-3: 0.50;
+
+  /* 毛玻璃面板参数 - Light 模式（提升不透明度保证可读性） */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-card: rgba(255, 255, 255, 0.60);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.70);
+  --glass-border: rgba(200, 210, 225, 0.60);
+  --glass-inset: rgba(255, 255, 255, 0.80);
+  --glass-shadow: rgba(0, 0, 0, 0.08);
+  --glass-shadow-elevated: rgba(0, 0, 0, 0.12);
+
+  /* 输入框 Focus 光晕 */
+  --input-focus-glow: rgba(6, 182, 212, 0.35);
+
+  /* 文字色彩 - Light 模式增强对比度 */
+  --text-primary: #0c0f1a;
+  --text-secondary: #2d3748;
+  --text-muted: #64748b;
+}
+
+.dark {
+  /* 页面基底背景色 - 近纯黑 */
+  --page-bg: #0a0a0a;
+
+  /* 渐变网格 Blob 颜色 - Dark 模式（暖玫瑰 + 天蓝 + 琥珀，抵消蓝色偏移） */
+  --mesh-color-1: #e11d48;   /* rose-600 暖玫瑰 */
+  --mesh-color-2: #0284c7;   /* sky-600 天蓝 */
+  --mesh-color-3: #d97706;   /* amber-600 琥珀 */
+  --mesh-opacity-1: 0.12;
+  --mesh-opacity-2: 0.05;
+  --mesh-opacity-3: 0.14;
+
+  /* 毛玻璃面板参数 - Dark 模式（黑底适配） */
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-card: rgba(255, 255, 255, 0.06);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --glass-inset: rgba(255, 255, 255, 0.06);
+  --glass-shadow: rgba(0, 0, 0, 0.40);
+  --glass-shadow-elevated: rgba(0, 0, 0, 0.60);
+
+  /* 输入框 Focus 光晕 */
+  --input-focus-glow: rgba(6, 182, 212, 0.25);
+
+  /* 文字色彩 */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+}
+
+/* ======================================================================
+ * 核心毛玻璃语义类库
+ * ====================================================================== */
+
+/* 标准基线毛玻璃面板 */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-inset),
+    0 4px 24px -1px var(--glass-shadow);
+}
+
+/* 卡片级毛玻璃 - 带 hover 悬浮响应 */
+.glass-card {
+  background: var(--glass-bg-card);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.5rem; /* rounded-3xl */
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-inset),
+    0 4px 24px -1px var(--glass-shadow);
+  transition: all 300ms ease-out;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-inset),
+    0 8px 32px -4px var(--glass-shadow-elevated);
+}
+
+/* 高阶浮起面板 - 弹窗、悬浮菜单等 */
+.glass-elevated {
+  background: var(--glass-bg-elevated);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-inset),
+    0 8px 40px -4px var(--glass-shadow-elevated);
+}
+
+/* 纯装饰性浮动玻璃方块 */
+.glass-decor {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.5rem;
+  box-shadow: inset 0 1px 0 0 var(--glass-inset);
+}
+
+/* ======================================================================
+ * 输入框体系
+ * ====================================================================== */
+
+.glass-input {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  transition: all 300ms ease-out;
+  outline: none;
+}
+
+.glass-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Focus 状态：弥散光晕，绝不使用 ring 或 border 硬线 */
+.glass-input:focus {
+  box-shadow: 0 0 0 4px var(--input-focus-glow);
+  border-color: rgba(6, 182, 212, 0.5);
+}
+
+/* ======================================================================
+ * 按钮体系
+ * ====================================================================== */
+
+/* 主行动点 CTA */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: all 300ms ease-out;
+  box-shadow: 0 4px 14px -2px rgba(6, 182, 212, 0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -2px rgba(6, 182, 212, 0.5);
+  filter: brightness(1.05);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 毛玻璃药丸按钮 - 次级操作 */
+.btn-glass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 300ms ease-out;
+}
+
+.btn-glass:hover {
+  transform: translateY(-1px);
+  background: var(--glass-bg-card);
+  box-shadow: 0 4px 16px -2px var(--glass-shadow);
+}
+
+.btn-glass:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 幽灵按钮 - hover 时才显现玻璃质感 */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 300ms ease-out;
+}
+
+.btn-ghost:hover {
+  transform: translateY(-1px);
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ======================================================================
+ * 关键帧动画
+ * ====================================================================== */
+
+/* 渐变网格 Blob 漂移动效 */
+@keyframes mesh-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(5%, -8%) scale(1.05); }
+  50%      { transform: translate(-3%, 6%) scale(0.95); }
+  75%      { transform: translate(7%, 3%) scale(1.02); }
+}
+
+@keyframes mesh-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(-6%, 5%) scale(0.97); }
+  50%      { transform: translate(4%, -7%) scale(1.04); }
+  75%      { transform: translate(-5%, -3%) scale(0.98); }
+}
+
+@keyframes mesh-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(4%, 6%) scale(1.03); }
+  50%      { transform: translate(-6%, -4%) scale(0.96); }
+  75%      { transform: translate(3%, -6%) scale(1.01); }
+}
+
+/* 装饰浮动方块 */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-20px) rotate(3deg); }
+}
+
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-15px) rotate(-2deg); }
+}
+
+/* 页面进入动效 */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ======================================================================
+ * 滚动条美化
+ * ====================================================================== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* ======================================================================
+ * 全局基础样式
+ * ====================================================================== */
+html {
+  scroll-behavior: smooth;
+  background-color: var(--page-bg);
+  transition: background-color 0.3s ease;
+}
+
+body {
+  overflow-x: hidden;
+  background-color: var(--page-bg);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 渐变文字效果 */
+.text-gradient {
+  background: linear-gradient(135deg, #06b6d4, #0ea5e9, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* section 进入动画基础类 */
+.section-animate {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section-animate.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
